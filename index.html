@@ -1,0 +1,36 @@
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Test</title>
+	<style>
+		html, body {
+			margin: 0;
+			padding: 0;
+			color: #EEE;
+			background: #222;
+		}
+		#test, #test > canvas {
+			margin: 0;
+			padding: 0;
+		}
+		#info {
+			position: absolute;
+			top: 0;
+			left: 0;
+		}
+		#btninfo {
+			position: absolute;
+			bottom: 0;
+			left: 0;
+		}
+	</style>
+</head>
+<body>
+	<div id="test">
+	</div>
+	<div id="info"></div>
+	<button id="btninfo" onclick="exportGif()">Start export</button>
+	<script src="js/CCapture.all.min.js"></script>
+	<script src="js/index.js"></script>
+</body>
+</html>
