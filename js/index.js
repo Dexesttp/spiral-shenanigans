@@ -1,4 +1,21 @@
 "use strict";
+
+/**
+ * Get the requested URL parameter from the given URL, or from the current URL if no URL is given.
+ * From https://stackoverflow.com/a/901144
+ * @param {string} name 
+ * @param {string|undefined} url 
+ */
+function getParameterByName(name, url) {
+    if (!url) url = window.location.href;
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
+
 /**
  * adapted from http://mrdoob.com/lab/javascript/webgl/glsl/02/ by mrdoob
  * adapted from answer for http://stackoverflow.com/questions/4638317
@@ -6,6 +23,7 @@
 
 var effectDiv,
 	canvas,
+	canvasSize = "small",
 	gl,
 	buffer,
 	vertex_shader,
@@ -44,9 +62,11 @@ function init() {
 		framerate: 60,
 		verbose: false,
 	});
+	var spiral = getParameterByName("file") || "spiral";
+	canvasSize = getParameterByName("canvas") || "small";
 	return Promise.all([
 		fetch("shaders/spiral.vs").then(r => r.text()),
-		fetch("shaders/spiral.fs").then(r => r.text()),
+		fetch("shaders/" + spiral + ".fs").then(r => r.text()),
 	]).then(([vsText, fsText]) => {
 		vertex_shader = vsText;
 		fragment_shader = fsText;
@@ -54,7 +74,7 @@ function init() {
 	.then(() => {
 		effectDiv = document.getElementById('test');
 		canvas = document.createElement('canvas');
-		effectDiv.appendChild(canvas );
+		effectDiv.appendChild(canvas);
 
 		// Initialize WebGL
 		try {
@@ -112,8 +132,14 @@ function createShader(src, type) {
 }
 
 function onWindowResize(event) {
-	canvas.width = 400;
-	canvas.height = 300;
+	if(canvasSize === "small") {
+		canvas.width = 400;
+		canvas.height = 300;
+	}
+	else {
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+	}
 	parameters.screenWidth = canvas.width;
 	parameters.screenHeight = canvas.height;
 	parameters.aspectX = canvas.width/canvas.height;
