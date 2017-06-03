@@ -14,21 +14,22 @@ var effectDiv,
     vertex_position,
 	capturer,
 	parameters = {
-		start_time: new Date().getTime(),
 		time: 0,
 		screenWidth: 0,
 		screenHeight: 0
 	};
+
+var TIME_INTERVAL = 30;
 	
 
 init()
 .then(() => {
 	function loopFrame() {
+		parameters.time += TIME_INTERVAL;
 		loop();
 		capturer.capture(canvas);
-		requestAnimationFrame(loopFrame);
 	}
-	requestAnimationFrame(loopFrame);
+	setInterval(loopFrame, TIME_INTERVAL);
 });
 
 function exportGif() {
@@ -39,8 +40,8 @@ function init() {
 	capturer = new CCapture({
 		format: 'gif',
 		workersPath: 'js/',
-		timeLimit: 5,
-		framerate: 30,
+		timeLimit: 1.64,
+		framerate: 60,
 		verbose: false,
 	});
 	return Promise.all([
@@ -111,18 +112,17 @@ function createShader(src, type) {
 }
 
 function onWindowResize(event) {
-	canvas.width = window.innerWidth;
-	canvas.height = window.innerHeight;
+	canvas.width = 400;
+	canvas.height = 300;
 	parameters.screenWidth = canvas.width;
 	parameters.screenHeight = canvas.height;
-	parameters.aspectX = canvas.width/canvas.height ;
+	parameters.aspectX = canvas.width/canvas.height;
 	parameters.aspectY = 1.0 ;
 	gl.viewport(0, 0, canvas.width, canvas.height);
 }
 
 function loop() {
 	if (!currentProgram) return;
-	parameters.time = new Date().getTime() - parameters.start_time;
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 	// Load program into GPU
@@ -130,6 +130,7 @@ function loop() {
 
 	// Set values to program variables
 	gl.uniform1f(gl.getUniformLocation(currentProgram, 'time'), parameters.time / 1000);
+	gl.uniform1f(gl.getUniformLocation(currentProgram, 'branchCount'), 4);
 	gl.uniform2f(gl.getUniformLocation(currentProgram, 'resolution'), parameters.screenWidth, parameters.screenHeight);
 	gl.uniform2f(gl.getUniformLocation(currentProgram, 'aspect'), parameters.aspectX, parameters.aspectY);
 

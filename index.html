@@ -1,7 +1,8 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>Test</title>
+	<title>Spiraaals~</title>
+	<link rel="icon" href="favicon.png">
 	<style>
 		html, body {
 			margin: 0;
@@ -12,6 +13,10 @@
 		#test, #test > canvas {
 			margin: 0;
 			padding: 0;
+		}
+		#test > canvas {
+			width: 400px;
+			height: 300px;
 		}
 		#info {
 			position: absolute;
@@ -30,6 +35,7 @@
 	</div>
 	<div id="info"></div>
 	<button id="btninfo" onclick="exportGif()">Start export</button>
+	<script src="js/moment.js"></script>
 	<script src="js/CCapture.all.min.js"></script>
 	<script src="js/index.js"></script>
 </body>

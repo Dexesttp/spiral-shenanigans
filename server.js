@@ -1,8 +1,9 @@
 const express = require("express");
+const moment = require("moment");
 const app = express();
 
 app.use((req, res, next) => {
-	console.log(`[${req.url}]`);
+	console.log(`[${moment().format("YYYY-MM-DD HH:mm:ss")}] ${req.url}`);
 	next();
 })
 
