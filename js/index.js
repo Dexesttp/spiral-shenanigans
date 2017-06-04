@@ -16,11 +16,30 @@ function getParameterByName(name, url) {
     return decodeURIComponent(results[2].replace(/\+/g, " "));
 }
 
+/** 
+ * This is used above to convert the hex value from the html5 color picker into rgb values
+ * from http://esotericsoftware.com/forum/WebGL-Tinting-Slot-7693
+ * @param {string} hex the hexadecimal code. Must match the #FFFFFF format.
+ * @returns {{r: number, g: number, b: number}|null}
+ */
+function hexToRgb(hex) {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    var resultSmall = /^#?([a-f\d]{1})([a-f\d]{1})([a-f\d]{1})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16) / 255,
+        g: parseInt(result[2], 16) / 255,
+        b: parseInt(result[3], 16) / 255,
+    } : resultSmall ? {
+        r: parseInt(resultSmall[1], 16) / 15,
+        g: parseInt(resultSmall[2], 16) / 15,
+        b: parseInt(resultSmall[3], 16) / 15,
+	} : null;
+}
+
 /**
- * adapted from http://mrdoob.com/lab/javascript/webgl/glsl/02/ by mrdoob
+ * adapted from http://mrdoob.com/lab/javascript/webgl/glsl/02/ by MrDoob
  * adapted from answer for http://stackoverflow.com/questions/4638317
  */
-
 var effectDiv,
 	canvas,
 	canvasSize = "small",
@@ -31,6 +50,12 @@ var effectDiv,
 	currentProgram,
     vertex_position,
 	capturer,
+	colors = {
+		fg: {},
+		bg: {},
+		dim: {},
+		pulse: {},
+	},
 	parameters = {
 		time: 0,
 		screenWidth: 0,
@@ -62,11 +87,28 @@ function init() {
 		framerate: 60,
 		verbose: false,
 	});
-	var spiral = getParameterByName("file") || "spiral";
-	canvasSize = getParameterByName("canvas") || "small";
+
+	// These are the URI parameters.
+	// Spiral shader to use.
+	var spiralFile = getParameterByName("file") || "spiral";
+	// Size of the canvas, either "small" (400*300) or "big" (whole screen)
+	canvasSize = getParameterByName("big") !== null ? "big" : getParameterByName("canvas") || "small";
+
+	// These colors are stored as rgba() vectors. red, green, and blue should be between 0 and 1. Let alpha be at 1.
+	/*	
+	vec4 bgColor = vec4(0.0, 0.0, 0.0, 1.0);
+	vec4 fgColor = vec4(1.0, 0.6, 0.7, 1.0);
+	vec4 pulseColor = vec4(1.0, 1.0, 1.0, 1.0);
+	vec4 dimColor = vec4(0.5, 0.0, 0.0, 1.0);
+	*/
+	colors.bg = hexToRgb(getParameterByName("bg")) || {r: 0, g: 0, b: 0};
+	colors.fg = hexToRgb(getParameterByName("fg")) || {r: 1, g: 0.6, b: 0.7};
+	colors.pulse = hexToRgb(getParameterByName("pulse")) || {r: 1.0, g: 1.0, b: 1.0};
+	colors.dim = hexToRgb(getParameterByName("dim")) || {r: 0.5, g: 0, b: 0};
+
 	return Promise.all([
 		fetch("shaders/spiral.vs").then(r => r.text()),
-		fetch("shaders/" + spiral + ".fs").then(r => r.text()),
+		fetch("shaders/" + spiralFile + ".fs").then(r => r.text()),
 	]).then(([vsText, fsText]) => {
 		vertex_shader = vsText;
 		fragment_shader = fsText;
@@ -159,6 +201,11 @@ function loop() {
 	gl.uniform1f(gl.getUniformLocation(currentProgram, 'branchCount'), 4);
 	gl.uniform2f(gl.getUniformLocation(currentProgram, 'resolution'), parameters.screenWidth, parameters.screenHeight);
 	gl.uniform2f(gl.getUniformLocation(currentProgram, 'aspect'), parameters.aspectX, parameters.aspectY);
+
+	gl.uniform4f(gl.getUniformLocation(currentProgram, 'bgColor'), colors.bg.r, colors.bg.g, colors.bg.b, 1.0);
+	gl.uniform4f(gl.getUniformLocation(currentProgram, 'fgColor'), colors.fg.r, colors.fg.g, colors.fg.b, 1.0);
+	gl.uniform4f(gl.getUniformLocation(currentProgram, 'pulseColor'), colors.pulse.r, colors.pulse.g, colors.pulse.b, 1.0);
+	gl.uniform4f(gl.getUniformLocation(currentProgram, 'dimColor'), colors.dim.r, colors.dim.g, colors.dim.b, 1.0);
 
 	// Render geometry
 	gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
