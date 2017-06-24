@@ -32,51 +32,33 @@ void main(void) {
 	// The first line speeds up from "100" , up to a maximum of "170" along a factor of "1.5". 
 	// float timespeedup = (100.0 + min(1.5*time, 70.0))*time;
 	// The second line doesn't speedup, and stays at a constant "60.0" spin speed.
-	float timespeedup = 60.0*time;
+	float timespeedup = mod(40.0*time, 120.0);
 
 	// This is the actual spiral scalar field.
 	// The first formula is a "logarithmic spiral scalar field", adjusted back to radians, with a PI offset to allow for aliasing.
 	// The 0.1 influences the number of slopes.
-	float spinValue = mod(angle - timespeedup - 120.0*log(radius), 360.0 / branchCount) * (3.1415 / 36.0) + 3.1415;
-	// The second formula is a "logarithmic spiral scalar field", adjusted back to radians, with a PI offset to allow for aliasing.
-	// The 0.1 influences the number of slopes.
-	// float spinValue = mod(angle - timespeedup - 250.0*radius, 360.0 / branchCount) * 0.1 + 3.1415;
+	float radiusOffset = max(min(30.0 * tan(radius * 5.0), 100.0), -100.0);
+	float dephasedRadiusOffset = - max(min(30.0 * tan(240.0 + radius * 5.0), 100.0), -100.0);
 
-	// This is the mask for the spiral. It creates this 'cool' sharding effect.
-	// Set to "1.08" ~= PI/2 to remove the sharding. 0.0, 3.14 will make the whole spiral disappear.
-	// float maskValue = 1.08;
-	float maskValue = mod(- angle - timespeedup*4.0 - 240.0*log(radius), 360.0 / branchCount) * (3.1415 / 36.0) + 3.1415;
-	// float maskValue = mod(- angle - timespeedup*2.0 - 300.0*radius, 360.0 / branchCount) * 0.1 + 3.1415;
+	float radiusValue = radiusOffset;
+	if(abs(radiusOffset) > abs(dephasedRadiusOffset))
+		radiusValue = dephasedRadiusOffset;
 
-	// This is the pulse value. It is used to alternate the fg color and the pulse color for the spiral.
-	// Put to 0.0 to use the fg color only.
-	float pulseValue = sin(mod(time * 17.1 / branchCount + radius * 2.0 + 2.0, 6.2832)) * 0.5 + 0.5;
+	float spinValue = 1.2 + 2.0 * (mod(mod(angle - timespeedup + radiusValue, 60.0), 20.0) - 10.0) / 10.0;
+	float invertedSpinValue = 1.2 - 2.0 * (mod(mod(angle - timespeedup + radiusValue, 60.0), 20.0) - 10.0) / 10.0;
 
-	// This is the dim value. It is used for the black circle pulsing.
-	// Put to 1.0 to remove the black dim. 
-	// float dimValue = 1.0;
-	float dimValue = sin(mod(- time * 34.2 / branchCount + radius * 5.0 + 2.0, 6.2832)) * 0.5 + 0.5;
+	float totalSpinValue = min(min(spinValue, invertedSpinValue), 1.0);
 
-	vec4 colorVector = mix(fgColor, pulseColor, pulseValue);
-	vec4 dimmedColorVector = mix(dimColor, colorVector, sharpen(dimValue / 2.0));
-	
-	// Compute the actual spiral shape
-	float sharpenedSpinValue = sharpen(spinValue);
-	// Same thing, but for the black mask.
-	float sharpenedMaskValue = sharpen(maskValue);
-	// Combine the spiral and the mask.
-	float maskedSpinValue = max(sharpenedSpinValue - max(sharpenedMaskValue, 0.0), 0.0);
-	
 	// This is the color value at a given point of the spin
 	// vec4 spinVector = mix(bgColor, dimmedColorVector, sharpenedSpinValue);
-	vec4 spinVector = mix(bgColor, dimmedColorVector, maskedSpinValue);
+	vec4 spinVector = mix(bgColor, fgColor, totalSpinValue);
 
 	// Add a flare in the middle of the spiral to hide the moiré effects when the spiral gets tiny.
 	// The flare holds for 10% of the radius unit, and starts at -0.15.
 	// 0.1 => percent of the picture used for the flare
 	// -0.15 => starting offset
-	float flareValue = max(0.0, min(radius / 0.1 - 0.15, 1.0));
+	float flareValue = max(0.0, min(radius / 0.1 - 0.1, 1.0));
 
 	// Mix the spin vector and the flare. This is the final step.
-	gl_FragColor = mix(dimmedColorVector, spinVector, flareValue);
+	gl_FragColor = mix(bgColor, spinVector, flareValue);
 }

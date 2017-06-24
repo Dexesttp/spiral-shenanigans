@@ -102,9 +102,9 @@ function init() {
 	vec4 dimColor = vec4(0.5, 0.0, 0.0, 1.0);
 	*/
 	colors.bg = hexToRgb(getParameterByName("bg")) || {r: 0, g: 0, b: 0};
-	colors.fg = hexToRgb(getParameterByName("fg")) || {r: 1, g: 0.6, b: 0.7};
-	colors.pulse = hexToRgb(getParameterByName("pulse")) || {r: 1.0, g: 1.0, b: 1.0};
-	colors.dim = hexToRgb(getParameterByName("dim")) || {r: 0.5, g: 0, b: 0};
+	colors.fg = hexToRgb(getParameterByName("fg")) || {r: 1.0, g: 1.0, b: 1.0};
+	colors.dim = hexToRgb(getParameterByName("dim")) || {r: 0.2, g: 0.5, b: 0};
+	colors.pulse = hexToRgb(getParameterByName("pulse")) || {r: 0.2, g: 0, b: 0};
 
 	return Promise.all([
 		fetch("shaders/spiral.vs").then(r => r.text()),
@@ -177,6 +177,10 @@ function onWindowResize(event) {
 	if(canvasSize === "small") {
 		canvas.width = 400;
 		canvas.height = 300;
+	}
+	else if(canvasSize === "screen") {
+		canvas.width = 1280;
+		canvas.height = 720;
 	}
 	else {
 		canvas.width = window.innerWidth;
