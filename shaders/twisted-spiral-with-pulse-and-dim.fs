@@ -63,7 +63,8 @@ void main(void) {
 	// Stays at a constant "60.0" spin speed.
 	float timespeedup = mod(60.0*time, 120.0);
 
-	float globalAlphaValue = shrinkTo(0.45 * sin(timespeedup * 0.0528) + 0.5, 0.5);
+	// float globalAlphaValue = shrinkTo(0.45 * sin(timespeedup * 0.0528) + 0.5, 0.5);
+	float globalAlphaValue = 0.0;
 
 	// The commented line remove the spiral totally, allowing you to test the dim algorithm.
 	float totalSpinValue = getSpin(angle, radius, timespeedup);

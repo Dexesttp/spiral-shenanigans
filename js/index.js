@@ -83,7 +83,7 @@ function init() {
 	capturer = new CCapture({
 		format: 'gif',
 		workersPath: 'js/',
-		timeLimit: 1.64,
+		timeLimit: 1.1,
 		framerate: 60,
 		verbose: false,
 	});
@@ -93,18 +93,16 @@ function init() {
 	var spiralFile = getParameterByName("file") || "spiral";
 	// Size of the canvas, either "small" (400*300) or "big" (whole screen)
 	canvasSize = getParameterByName("big") !== null ? "big" : getParameterByName("canvas") || "small";
+	if(getParameterByName("showButton") == null)
+	{
+		document.getElementById("btninfo").style.display = "none";
+	}
 
 	// These colors are stored as rgba() vectors. red, green, and blue should be between 0 and 1. Let alpha be at 1.
-	/*	
-	vec4 bgColor = vec4(0.0, 0.0, 0.0, 1.0);
-	vec4 fgColor = vec4(1.0, 0.6, 0.7, 1.0);
-	vec4 pulseColor = vec4(1.0, 1.0, 1.0, 1.0);
-	vec4 dimColor = vec4(0.5, 0.0, 0.0, 1.0);
-	*/
 	colors.bg = hexToRgb(getParameterByName("bg")) || {r: 0, g: 0, b: 0};
 	colors.fg = hexToRgb(getParameterByName("fg")) || {r: 1.0, g: 1.0, b: 1.0};
-	colors.dim = hexToRgb(getParameterByName("dim")) || {r: 0.2, g: 0.5, b: 0};
-	colors.pulse = hexToRgb(getParameterByName("pulse")) || {r: 0.2, g: 0, b: 0};
+	colors.pulse = hexToRgb(getParameterByName("pulse")) || {r: 0.7, g: 0.3, b: 0.9};
+	colors.dim = hexToRgb(getParameterByName("dim")) || {r: 0, g: 0, b: 0};
 
 	return Promise.all([
 		fetch("shaders/spiral.vs").then(r => r.text()),
