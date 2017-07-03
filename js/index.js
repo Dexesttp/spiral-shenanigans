@@ -180,6 +180,14 @@ function onWindowResize(event) {
 		canvas.width = 1280;
 		canvas.height = 720;
 	}
+	else if(canvasSize === "1080") {
+		canvas.width = 1920;
+		canvas.height = 1080;
+	}
+	else if(canvasSize === "1080") {
+		canvas.width = 1600;
+		canvas.height = 900;
+	}
 	else {
 		canvas.width = window.innerWidth;
 		canvas.height = window.innerHeight;
