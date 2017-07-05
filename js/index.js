@@ -23,8 +23,8 @@ function getParameterByName(name, url) {
  * @returns {{r: number, g: number, b: number}|null}
  */
 function hexToRgb(hex) {
-    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    var resultSmall = /^#?([a-f\d]{1})([a-f\d]{1})([a-f\d]{1})$/i.exec(hex);
+    var result = /^([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    var resultSmall = /^([a-f\d]{1})([a-f\d]{1})([a-f\d]{1})$/i.exec(hex);
     return result ? {
         r: parseInt(result[1], 16) / 255,
         g: parseInt(result[2], 16) / 255,
@@ -34,6 +34,23 @@ function hexToRgb(hex) {
         g: parseInt(resultSmall[2], 16) / 15,
         b: parseInt(resultSmall[3], 16) / 15,
 	} : null;
+}
+
+function getConfigFromURL() {
+	return {
+		shaderFileName: getParameterByName("file") || "spiral",
+		// Size of the canvas, either "small" (400*300) or "big" (whole screen)
+		canvasSize: getParameterByName("big") !== null ? "big" : getParameterByName("canvas") || "small",
+		showButton: getParameterByName("showButton") !== null,
+		speedFactor: +getParameterByName("speed") || 1,
+		// These colors are stored as rgba() vectors. red, green, and blue should be between 0 and 1. Let alpha be at 1.
+		colors: {
+			bg: hexToRgb(getParameterByName("bg")) || {r: 0, g: 0, b: 0},
+			fg: hexToRgb(getParameterByName("fg")) || {r: 1.0, g: 1.0, b: 1.0},
+			pulse: hexToRgb(getParameterByName("pulse")) || {r: 0.7, g: 0.3, b: 0.9},
+			dim: hexToRgb(getParameterByName("dim")) || {r: 0, g: 0, b: 0},
+		},
+	};
 }
 
 /**
@@ -50,6 +67,7 @@ var effectDiv,
 	currentProgram,
     vertex_position,
 	capturer,
+	speedFactor = 1,
 	colors = {
 		fg: {},
 		bg: {},
@@ -66,9 +84,9 @@ var TIME_INTERVAL = 30;
 	
 
 init()
-.then(() => {
+.then(function() {
 	function loopFrame() {
-		parameters.time += TIME_INTERVAL;
+		parameters.time += TIME_INTERVAL * speedFactor;
 		loop();
 		capturer.capture(canvas);
 	}
@@ -90,28 +108,24 @@ function init() {
 
 	// These are the URI parameters.
 	// Spiral shader to use.
-	var spiralFile = getParameterByName("file") || "spiral";
-	// Size of the canvas, either "small" (400*300) or "big" (whole screen)
-	canvasSize = getParameterByName("big") !== null ? "big" : getParameterByName("canvas") || "small";
-	if(getParameterByName("showButton") == null)
-	{
-		document.getElementById("btninfo").style.display = "none";
-	}
+	var config = getConfigFromURL();
+	canvasSize = config.canvasSize;
+	colors = config.colors;
+	speedFactor = config.speedFactor;
 
-	// These colors are stored as rgba() vectors. red, green, and blue should be between 0 and 1. Let alpha be at 1.
-	colors.bg = hexToRgb(getParameterByName("bg")) || {r: 0, g: 0, b: 0};
-	colors.fg = hexToRgb(getParameterByName("fg")) || {r: 1.0, g: 1.0, b: 1.0};
-	colors.pulse = hexToRgb(getParameterByName("pulse")) || {r: 0.7, g: 0.3, b: 0.9};
-	colors.dim = hexToRgb(getParameterByName("dim")) || {r: 0, g: 0, b: 0};
+	// Hide the export button if needed
+	if(!config.showButton)
+		document.getElementById("exportButton").style.display = "none";
 
 	return Promise.all([
-		fetch("shaders/spiral.vs").then(r => r.text()),
-		fetch("shaders/" + spiralFile + ".fs").then(r => r.text()),
-	]).then(([vsText, fsText]) => {
-		vertex_shader = vsText;
-		fragment_shader = fsText;
+		fetch("shaders/spiral.vs").then(function (r) { return r.text() }),
+		fetch("shaders/" + config.shaderFileName + ".fs").then(function (r) { return r.text() }),
+	])
+	.then(function(fetchedText) {
+		vertex_shader = fetchedText[0];
+		fragment_shader = fetchedText[1];
 	})
-	.then(() => {
+	.then(function () {
 		effectDiv = document.getElementById('test');
 		canvas = document.createElement('canvas');
 		effectDiv.appendChild(canvas);
@@ -134,6 +148,7 @@ function init() {
 		// Create Program
 		currentProgram = createProgram(vertex_shader, fragment_shader);
 
+		// Setup program size.
 		onWindowResize();
 		window.addEventListener("resize", onWindowResize, false);
 	});

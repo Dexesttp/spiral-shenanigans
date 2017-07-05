@@ -72,14 +72,12 @@ void main(void) {
 	// float totalSpinValue = 1.0;
 
 	// This is the pulse value (pulses a new color in the foreground color).
-	float pulseTime = timespeedup * 0.1;
 	// For now, it's just a wavey circle. We can make it smaller / sharpen one side / make it slower as it gets further later.
-	float pulseValue = sin(pulseTime * 0.528 + log(radius) * 5.0 + 0.2 * sin(3.14 * angle / 15.0 + sin(radius * 10.0))) * 0.5 + 0.5;
+	float pulseValue = sin(timespeedup * 0.0528 + log(radius) * 5.0 + 0.2 * sin(3.14 * angle / 15.0 + sin(radius * 10.0))) * 0.5 + 0.5;
 	// float pulseValue = 0.0;
 
 	// This is the dim value (dims the whole spiral)
-	float dimTime = timespeedup * 0.1;
-	float dimValue = sin(- dimTime * 0.528 + log(radius) * 5.0) * 0.5 + 0.5;
+	float dimValue = sin(- timespeedup * 0.0528 + log(radius) * 5.0) * 0.5 + 0.5;
 	// float dimValue = 0.0;
 	dimValue = shrinkTo(dimValue, 0.95);
 
