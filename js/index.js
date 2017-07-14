@@ -43,6 +43,9 @@ function getConfigFromURL() {
 		canvasSize: getParameterByName("big") !== null ? "big" : getParameterByName("canvas") || "small",
 		showButton: getParameterByName("showButton") !== null,
 		speedFactor: +getParameterByName("speed") || 1,
+		rotation: getParameterByName("counterclockwise") === null ? 1 : -1,
+		direction: getParameterByName("inwards") === null ? -1 : 1,
+		branchCount: +getParameterByName("branch") || 4,
 		// These colors are stored as rgba() vectors. red, green, and blue should be between 0 and 1. Let alpha be at 1.
 		colors: {
 			bg: hexToRgb(getParameterByName("bg")) || {r: 0, g: 0, b: 0},
@@ -74,10 +77,13 @@ var effectDiv,
 		dim: {},
 		pulse: {},
 	},
+	direction = 1,
+	rotation = 1,
+	branchCount = 4,
 	parameters = {
 		time: 0,
 		screenWidth: 0,
-		screenHeight: 0
+		screenHeight: 0,
 	};
 
 var TIME_INTERVAL = 30;
@@ -112,6 +118,9 @@ function init() {
 	canvasSize = config.canvasSize;
 	colors = config.colors;
 	speedFactor = config.speedFactor;
+	direction = config.direction;
+	rotation = config.rotation;
+	branchCount = config.branchCount;
 
 	// Hide the export button if needed
 	if(!config.showButton)
@@ -223,7 +232,11 @@ function loop() {
 
 	// Set values to program variables
 	gl.uniform1f(gl.getUniformLocation(currentProgram, 'time'), parameters.time / 1000);
-	gl.uniform1f(gl.getUniformLocation(currentProgram, 'branchCount'), 4);
+	gl.uniform1f(gl.getUniformLocation(currentProgram, 'branchCount'), branchCount);
+	gl.uniform1f(gl.getUniformLocation(currentProgram, 'direction'), direction);
+	gl.uniform1f(gl.getUniformLocation(currentProgram, 'rotation'), rotation);
+
+
 	gl.uniform2f(gl.getUniformLocation(currentProgram, 'resolution'), parameters.screenWidth, parameters.screenHeight);
 	gl.uniform2f(gl.getUniformLocation(currentProgram, 'aspect'), parameters.aspectX, parameters.aspectY);
 
@@ -231,6 +244,7 @@ function loop() {
 	gl.uniform4f(gl.getUniformLocation(currentProgram, 'fgColor'), colors.fg.r, colors.fg.g, colors.fg.b, 1.0);
 	gl.uniform4f(gl.getUniformLocation(currentProgram, 'pulseColor'), colors.pulse.r, colors.pulse.g, colors.pulse.b, 1.0);
 	gl.uniform4f(gl.getUniformLocation(currentProgram, 'dimColor'), colors.dim.r, colors.dim.g, colors.dim.b, 1.0);
+
 
 	// Render geometry
 	gl.bindBuffer(gl.ARRAY_BUFFER, buffer);

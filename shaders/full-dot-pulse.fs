@@ -1,5 +1,8 @@
 uniform float time;
 uniform float branchCount;
+uniform float direction;
+uniform float rotation;
+
 uniform vec2 resolution;
 uniform vec2 aspect;
 
@@ -28,9 +31,11 @@ void main(void) {
 	}
 
 	float flareValue = max(min(radius
-		* (pow(cos(radius * 10.0 + radTime * 2.0 + angle * 5.0) * 0.5 + cos(- radTime - angle * 7.0) * 0.75, 2.0))
+		* (pow(cos(radius * branchCount * 10.0 + direction * radTime * 2.0 - rotation * angle * 13.0) * 0.5 + cos(radTime - direction * rotation * angle * 15.0) * 0.75, 2.0))
 		, 1.0), 0.0);
+	float pulseValue = sin(mod(timespeedup * 0.0528 + radius * 5.0 + 2.0, 6.2832)) * 0.5 + 0.5;
+	float dimValue = sin(mod(- timespeedup * 0.1056 + radius * 5.0 + 2.0, 6.2832)) * 0.5 + 0.5;
 
 	// Mix the spin vector and the flare. This is the final step.
-	gl_FragColor = mix(bgColor, fgColor, flareValue);
+	gl_FragColor = mix(mix(bgColor, mix(pulseColor, fgColor, pulseValue), flareValue), dimColor, dimValue);
 }

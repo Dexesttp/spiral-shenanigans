@@ -1,5 +1,8 @@
 uniform float time;
 uniform float branchCount;
+uniform float direction;
+uniform float rotation;
+
 uniform vec2 resolution;
 uniform vec2 aspect;
 
