@@ -1,5 +1,8 @@
 uniform float time;
 uniform float branchCount;
+uniform float direction;
+uniform float rotation;
+
 uniform vec2 resolution;
 uniform vec2 aspect;
 
@@ -27,21 +30,24 @@ float shrinkTo(float value, float limit) {
 // -------------------
 float getSpin(float angle, float radius, float timespeedup) {
 	// The radus offset (and dephased radius offset) are values to know when to start the main and the flipped values.
-	// The 30.0 is the slope of the spiral (more = more slopes)
-	// the 5.0 is the size of each band (more = more bands) 
-	float radiusOffset = max(min(30.0 * tan(radius * 5.0), 100.0), -100.0);
-	float dephasedRadiusOffset = - max(min(30.0 * tan(240.0 + radius * 5.0), 100.0), -100.0);
+	// the 5.0 is the size of each band (more = more bands)
+	float twistRadius = 5.0;
+	// This is the slope of the spiral (more = more slopes). Don't touch, it's linked to the lines alignment.
+	float twistSlope = 18.7;
+	float radiusOffset = max(min(twistSlope * tan(radius * twistRadius), 100.0), -100.0);
+	float dephasedRadiusOffset = - max(min(twistSlope * tan(240.0 + radius * twistRadius), 100.0), -100.0);
 
 	// Check which is the greatest value, and apply it to the algorithm.
 	float radiusValue = radiusOffset;
-	if(abs(radiusOffset) > abs(dephasedRadiusOffset)) {
-		radiusValue = 1.0;
-	}
+	if(abs(radiusOffset) > abs(dephasedRadiusOffset))
+		// The lines alignment value.
+		radiusValue = 6.7;
 
 	// Compute the spin and inverted spin value.
 	// We will combine the two based on the minimum value of both.
-	float spinValue = 1.2 + 2.0 * (mod(mod(angle + timespeedup + radiusValue, 60.0), 20.0) - 10.0) / 10.0;
-	float invertedSpinValue = 1.2 - 2.0 * (mod(mod(angle + timespeedup + radiusValue, 60.0), 20.0) - 10.0) / 10.0;
+	float angleValue = angle * rotation * branchCount / 18.0;
+	float spinValue = 1.2 + 2.0 * (mod(mod(angleValue + direction * rotation * timespeedup + radiusValue, 60.0), 20.0) - 10.0) / 10.0;
+	float invertedSpinValue = 1.2 - 2.0 * (mod(mod(angleValue + direction * rotation * timespeedup + radiusValue, 60.0), 20.0) - 10.0) / 10.0;
 
 	// This is the final value.
 	return min(min(spinValue, invertedSpinValue), 1.0);
