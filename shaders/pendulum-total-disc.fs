@@ -29,9 +29,9 @@ void main(void) {
 	float timespeedup = mod(60.0*time, 120.0);
 	// Used when freezing time for tests.
 	// float timespeedup = mod(60.0*0.0, 120.0);
-	
+
 	// This is the pendulum position
-	vec2 timePositionOffset = vec2(1.0*sin(timespeedup * 0.0523), 0.09 * pow(cos(timespeedup * 0.0523), 2.0));
+	vec2 timePositionOffset = vec2(1.0*sin(timespeedup * 0.0523), 0.4 * pow(cos(timespeedup * 0.0523), 2.0));
 	// Transform (x, y) into (r, a) coordinates based on the position offset defined as above
 	vec2 position = -aspect.xy + 2.0 * gl_FragCoord.xy / resolution.xy * aspect.xy + timePositionOffset;
 	float angle = 0.0 ;
@@ -40,8 +40,8 @@ void main(void) {
 		angle = degrees(atan(position.y,position.x));
 	}
 
-	vec2 pendulumStart = vec2(resolution.x / 2.0, resolution.y * 3.0);
-	vec2 pendulumEnd = vec2(resolution.x / 2.0, - 2.0 * resolution.y) - timePositionOffset * resolution.xy / aspect.xy;
+	vec2 pendulumStart = vec2(resolution.x / 2.0, resolution.y * 1.0);
+	vec2 pendulumEnd = vec2(resolution.x / 2.0, - 0.0 * resolution.y) - timePositionOffset * resolution.xy / aspect.xy;
 	float worldLayerValue = getComputedPosition(pendulumStart, pendulumEnd, gl_FragCoord.xy, 5.0);
 	
 	vec4 worldLayer = mix(vec4(0.0, 0.0, 0.0, 1.0), fgColor, worldLayerValue);

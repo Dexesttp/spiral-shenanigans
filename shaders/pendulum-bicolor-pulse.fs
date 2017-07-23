@@ -30,7 +30,6 @@ void main(void) {
 	// This variable is used for time manipulation.
 	// Stays at a constant "60.0" spin speed.
 	float timespeedup = mod(60.0*time, 120.0);
-	float radTime = timespeedup * 3.1415 / 60.0;
 	// Used when freezing time for tests.
 	// float timespeedup = mod(60.0*0.0, 120.0);
 
@@ -50,27 +49,10 @@ void main(void) {
 	vec4 worldLayer = mix(vec4(0.0, 0.0, 0.0, 1.0), fgColor, worldLayerValue);
 
 	// The commented line remove the spiral totally, allowing you to test the dim algorithm.
-	// The inner slope.
-	// This slope is weird. If you put both inner and outer at the same value you get a rotating circle.
-	float innerSlope = 5.0;
-	// The outer slope. Same rules as above.
-	float outerSlope = 7.0;
-	// The speed of the spiral.
-	float innerSpeed = 2.0;
-	// This is the value multiplier for the inner data. Setting it to more than 0.5 will make some parts disappear.
-	float innerStrength = 0.5;
-	// This is the value multiplier for the outer data. Setting it to more than 0.5 will make some parts disappear
-	float outerStrength = 0.75;
-	// Influences the slope of the spiral
-	float spiralSlope = 10.0;
-
-
-	float totalSpinValue = max(min(radius
-		* (pow(
-			cos(radius * branchCount * spiralSlope + direction * radTime * innerSpeed - rotation * radians(angle) * innerSlope) * innerStrength
-			+ cos(radTime - direction * rotation * radians(angle) * outerSlope) * outerStrength
-		, 2.0))
-		, 1.0), 0.0);
+	float spinValue = mod(direction * angle - rotation * 3.0 * timespeedup - 120.0*log(radius), 360.0 / branchCount) * 0.1 + 3.141;
+	float totalSpinValue = min(sin(spinValue)
+		+ sin(3.0 * spinValue) / 3.0
+		+ sin(5.0 * spinValue) / 5.0, 0.7) * 1.3;
 	// float totalSpinValue = 1.0;
 
 	// This is the pulse value (pulses a new color in the foreground color).
