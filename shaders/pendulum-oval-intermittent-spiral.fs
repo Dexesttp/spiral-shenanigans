@@ -51,8 +51,6 @@ void main(void) {
 	// This is the value used to adjust the angle value based on the pendulum angle. 
 	float pendulumAngle = atan(pendulumStart.y - pendulumEnd.y, pendulumStart.x - pendulumEnd.x);
 	float angleSin = sin(2.0 * (angle - pendulumAngle - radians(45.0)));
-	// Alternative version, for a tic/toc effect.
-	// float angleSin = sin(2.0 * (angle - atan(timePositionOffset.y, timePositionOffset.x) - radians(45.0)));
 
 	float circleValue = min(radius * (0.1 * angleSin + 0.9) * 5.0, 1.0);
 

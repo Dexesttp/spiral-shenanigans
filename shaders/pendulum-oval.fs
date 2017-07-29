@@ -1,7 +1,6 @@
 uniform float time;
 uniform float branchCount;
 uniform float direction;
-uniform float rotation;
 
 uniform vec2 resolution;
 uniform vec2 aspect;
@@ -49,24 +48,13 @@ void main(void) {
 	vec4 worldLayer = mix(vec4(0.0, 0.0, 0.0, 1.0), fgColor, worldLayerValue);
 
 	// This is the value used to adjust the angle value based on the pendulum angle. 
-	float pendulumAngle = atan(pendulumStart.y - pendulumEnd.y, pendulumStart.x - pendulumEnd.x);
-	float angleSin = sin(2.0 * (angle - pendulumAngle - radians(45.0)));
-	// Alternative version, for a tic/toc effect.
-	// float angleSin = sin(2.0 * (angle - atan(timePositionOffset.y, timePositionOffset.x) - radians(45.0)));
+	float angleSin = sin(2.0 * (angle - atan(pendulumStart.y - pendulumEnd.y, pendulumStart.x - pendulumEnd.x) - radians(45.0)));
 
-	float circleValue = min(radius * (0.1 * angleSin + 0.9) * 5.0, 1.0);
+	float spinValue = min(radius * (0.1 * angleSin + 0.9) * 5.0, 1.0);
 
-	// This is the circle color value
-	vec4 circleVector = mix(bgColor, pulseColor, circleValue);
+	// This is the color value at a given point of the spin
+	vec4 spinVector = mix(bgColor, pulseColor, spinValue);
 
-	// This is the spiral color value
-	float spinValue = mod(- rotation * degrees(angle) - direction * timespeedup * 1.5 - 500.0*radius, 360.0 / branchCount) * 0.1 + 3.1415;
-	float sharpenedSpinValue = min(sin(spinValue)
-		+ sin(3.0 * spinValue) / 3.0
-		+ sin(5.0 * spinValue) / 5.0, 0.7) * 1.3;
-	vec4 spinVector = mix(bgColor, fgColor, sharpenedSpinValue);
-
-	vec4 fullVector = mix(circleVector, spinVector, 0.1 * pow(cos(timespeedup * 0.0523), 2.0));
 	// Compute the edge of the pendulum
 	float globalAlphaValue = 0.0;
 	float adjustedRadius = radius * (0.2 * angleSin + 0.8);
@@ -83,5 +71,5 @@ void main(void) {
 	}
 
 	// Mix the spin vector and the flare. This is the final step.
-	gl_FragColor = mix(fullVector, worldLayer, globalAlphaValue);
+	gl_FragColor = mix(spinVector, worldLayer, globalAlphaValue);
 }
