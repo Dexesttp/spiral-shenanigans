@@ -18,7 +18,7 @@ void main(void) {
 		angle = degrees(atan(position.y,position.x)) ;
 	}
 
-	float spinValue = mod(direction * angle - rotation * 1.5 * timespeedup - 120.0*log(radius), 360.0 / branchCount) * 0.1 + 3.141;
+	float spinValue = mod(- direction * rotation * angle - direction * 1.5 * timespeedup - 120.0*log(radius), 360.0 / branchCount) * 0.1 + 3.141;
 	float sharpenedSpinValue = min(sin(spinValue)
 		+ sin(3.0 * spinValue) / 3.0
 		+ sin(5.0 * spinValue) / 5.0, 0.7) * 1.3;

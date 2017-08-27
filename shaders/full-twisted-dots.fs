@@ -2,7 +2,6 @@
 #define M_2PI 6.283185307179586476925286766559
 #define M_PI_OVER_2 1.5707963267948966192313216916398
 
-
 #define C_SPIRAL_SPEED 2.0
 
 uniform float time;
@@ -58,17 +57,21 @@ void main(void) {
 	vec2 position = -aspect.xy + 2.0 * gl_FragCoord.xy / resolution.xy * aspect.xy;
 	float angle = getAngle(position);
 	float radius = length(position);
-	
-	vec2 fgCenterA = -aspect.xy + vec2(-cos(radTime), sin(radTime)) * (.1 + radius * .1) + 2.0 * gl_FragCoord.xy / resolution.xy * aspect.xy;
-	float angleA = getAngle(fgCenterA);
-	float radiusA = length(fgCenterA);
+
+	float spiralValue = sin(- C_SPIRAL_SPEED * radTime + branchCount * angle + 20.0 * radius) * 0.5 + 0.5;
+	float invertedSpiralValue = sin(- C_SPIRAL_SPEED * radTime - branchCount * angle + 20.0 * radius) * 0.5 + 0.5;
+	float circleValue = sharpSin(4.0 * radius - radTime, 0.3) * 0.5 + 0.5;
 
 
-	float bgOndul = sharpSin(log(radiusA) * 10.0 - radTime * 2.0, .7)
-				  * sin(angle * 10.0 - radius * 20.0 + radTime * 5.0)
-				  * (1.0 - min(1. / (radius * 20.0 + .1), 1.0))
-				  * (1.0 - min(1. / (radiusA * 70.0 + .01), 1.0))
-				  * 0.5 + 0.5;
+	float bgOndul = sin(angle * branchCount * 3.0) * sin(log(radius) * branchCount * 3.0 - radTime * 1.0) * 0.5 + 0.5;
 
-	gl_FragColor = mix(bgColor, fgColor, bgOndul);
+	vec4 newFg = fgColor;
+	vec4 newBg = mix(bgColor, fgColor, bgOndul);
+
+	// Mix the spin vector and the flare. This is the final step.
+	vec4 spiralColor = mix(newBg, newFg, spiralValue);
+	vec4 invertedSpiralColor = mix(newBg, newFg, invertedSpiralValue);
+	vec4 fullColor = mix(spiralColor, invertedSpiralColor, circleValue);
+	float centerValue = min(1.0 / (radius * 20.0 + 0.5), 1.0);
+	gl_FragColor = mix(fullColor, mix(bgColor, fgColor, 0.5), centerValue);
 }

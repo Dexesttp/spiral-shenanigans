@@ -22,7 +22,7 @@ void main(void) {
 		angle = degrees(atan(position.y,position.x)) ;
 	}
 
-	float spinValue = mod(- rotation * angle - direction * 1.5 * timespeedup - 120.0*log(radius), 360.0 / branchCount) * 0.1 + 3.13;
+	float spinValue = mod(- direction * rotation * angle - direction * 1.5 * timespeedup - 120.0*log(radius), 360.0 / branchCount) * 0.1 + 3.141;
 	float pulseValue = sin(timespeedup * 0.0528 + radius * 2.0 + 2.0) * 0.5 + 0.5;
 	float dimValue = sin(- timespeedup * 0.1056 + radius * 5.0 + 2.0) * 0.5 + 0.5;
 	vec4 colorVector = mix(fgColor, pulseColor, pulseValue);

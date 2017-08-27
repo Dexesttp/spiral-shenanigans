@@ -41,11 +41,12 @@ function getConfigFromURL() {
 		shaderFileName: getParameterByName("file") || "spiral",
 		// Size of the canvas, either "small" (400*300) or "big" (whole screen)
 		canvasSize: getParameterByName("big") !== null ? "big" : getParameterByName("canvas") || "small",
-		showButton: getParameterByName("showButton") !== null,
 		speedFactor: +getParameterByName("speed") || 1,
 		rotation: getParameterByName("counterclockwise") === null ? 1 : -1,
 		direction: getParameterByName("inwards") === null ? -1 : 1,
 		branchCount: +getParameterByName("branch") || 4,
+		showButton: getParameterByName("showButton") !== null,
+		exportName: getParameterByName("exportName") || undefined,
 		// These colors are stored as rgba() vectors. red, green, and blue should be between 0 and 1. Let alpha be at 1.
 		colors: {
 			bg: hexToRgb(getParameterByName("bg")) || {r: 0, g: 0, b: 0},
@@ -104,13 +105,6 @@ function exportGif() {
 }
 
 function init() {
-	capturer = new CCapture({
-		format: 'gif',
-		workersPath: 'js/',
-		timeLimit: 1.1,
-		framerate: 60,
-		verbose: false,
-	});
 
 	// These are the URI parameters.
 	// Spiral shader to use.
@@ -121,6 +115,15 @@ function init() {
 	direction = config.direction;
 	rotation = config.rotation;
 	branchCount = config.branchCount;
+
+	capturer = new CCapture({
+		format: 'gif',
+		workersPath: 'js/',
+		timeLimit: 1.1,
+		framerate: 60,
+		verbose: false,
+		name: config.exportName || undefined,
+	});
 
 	// Hide the export button if needed
 	if(!config.showButton)
@@ -219,7 +222,7 @@ function onWindowResize(event) {
 	parameters.screenWidth = canvas.width;
 	parameters.screenHeight = canvas.height;
 	parameters.aspectX = canvas.width/canvas.height;
-	parameters.aspectY = 1.0 ;
+	parameters.aspectY = 1.0;
 	gl.viewport(0, 0, canvas.width, canvas.height);
 }
 
