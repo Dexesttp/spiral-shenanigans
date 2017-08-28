@@ -11,6 +11,18 @@ const postProcessWait = 1e3;
 const canvasSize = "screen";
 
 const fileNames = [
+	"full-bicolor",
+	"full-bicolor-pulse",
+	"full-dot",
+	"full-dot-pulse",
+	"full-equal-branches",
+	"full-equal-branches-pulse",
+	"full-half-circle",
+	"full-pulse",
+	"full-sharded",
+	"full-sharded-pulse",
+	"full-twisted",
+	"full-flower",
 	"full-twisted-dots",
 	"full-twisted-lines",
 	"full-twisted-pulse",
@@ -32,18 +44,6 @@ const fileNames = [
 	"test-full-dots",
 	"test-rainbow-spiral",
 	"test-small-dots",
-	"full-bicolor",
-	"full-bicolor-pulse",
-	"full-dot",
-	"full-dot-pulse",
-	"full-equal-branches",
-	"full-equal-branches-pulse",
-	"full-half-circle",
-	"full-pulse",
-	"full-sharded",
-	"full-sharded-pulse",
-	"full-twisted",
-	"full-flower",
 ];
 
 (async () => {
