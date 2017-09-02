@@ -174,7 +174,7 @@ function init() {
 		window.addEventListener("resize", onWindowResize, false);
 
 		if(config.keyboardControls) {
-			window.addEventListener("keydown", (ev) => {
+			window.addEventListener("keydown", function(ev) {
 				switch(ev.code) {
 					case "KeyQ": newColor = {r: 1.0, g: 0, b: 0}; break;
 					case "KeyW": newColor = {r: 1.0, g: 1.0, b: 0}; break;
