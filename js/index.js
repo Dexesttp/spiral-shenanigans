@@ -89,7 +89,7 @@ var speedFactor = 1;
 var direction = 1;
 var rotation = 1;
 var branchCount = 4;
-var offsetCenter = 0.0;
+var offsetCenter = 0.;
 var colors = { fg: {}, bg: {}, dim: {}, pulse: {} };
 var parameters = {
 	time: 0,
@@ -104,6 +104,12 @@ var colorGradient;
 var oldOffsetCenter;
 var newOffsetCenter;
 var offsetGradient;
+
+var rewardText;
+var eventTimeout = Date.now() + 5000;
+var emptyTimeout = 0.;
+
+var script = [];
 
 /** Locations buffer */
 var locations;
@@ -180,30 +186,40 @@ function init() {
 		window.addEventListener("resize", onWindowResize, false);
 
 		if(config.keyboardControls) {
+			script = [
+				{ waitText: "Put your fingers on W and O<br />Press O", wantedKey: "KeyO", offset: .5, timeout: 4000 },
+				{ waitText: "Press W", wantedKey: "KeyW", color: {r: .25, g: .25, b: .25}, timeout: 5000 },
+				{ waitText: "Press W", wantedKey: "KeyW", offset: .25, timeout: 7000 },
+				{ waitText: "Press O", wantedKey: "KeyO", color: {r: .1, g: .1, b: .1}, timeout: 9000 },
+				{ waitText: "Press W", wantedKey: "KeyW", color: {r: 0, g: 0, b: 0}, timeout: 10000 },
+				{ waitText: "Press W", wantedKey: "KeyW", offset: 0.15, timeout: 10000 },
+				{ waitText: "Press O", wantedKey: "KeyO", offset: 0., timeout: 10000, rewardText: "Drop" },
+			]
+			rewardText = "Good. Keep staring";
 			window.addEventListener("keydown", function(ev) {
-				switch(ev.code) {
-					case "KeyQ": newColor = {r: 1.0, g: 0, b: 0}; break;
-					case "KeyW": newColor = {r: 1.0, g: 1.0, b: 0}; break;
-					case "KeyE": newColor = {r: 0, g: 1.0, b: 0}; break;
-					case "KeyR": newColor = {r: 0, g: 1.0, b: 1.0}; break;
-					case "KeyT": newColor = {r: 0, g: 0, b: 1.0}; break;
-					case "KeyY": newColor = {r: 1.0, g: 0, b: 1.0}; break;
-					case "KeyU": newColor = {r: 1.0, g: 1.0, b: 1.0}; break;
-					case "KeyI": newColor = {r: 0, g: 0, b: 0}; break;
-					case "KeyO":
-						newOffsetCenter = 0;
+				if(script[0]
+					&& (ev.code === script[0].wantedKey)
+					&& (Date.now() > eventTimeout)
+				) {
+					if(script[0].color) {
+						newColor = script[0].color;
+						oldColor = colors.fg;
+						colorGradient = 0.0;
+					}
+					if(script[0].offset !== undefined) {
+						newOffsetCenter = script[0].offset;
 						oldOffsetCenter = offsetCenter;
 						offsetGradient = 0.0;
-						return;
-					case "KeyP":
-						newOffsetCenter = 1.0;
-						oldOffsetCenter = offsetCenter;
-						offsetGradient = 0.0;
-						return;
-					default: return;
+					}
+					if(script[0].rewardText) {
+						rewardText = script[0].rewardText;
+					}
+					document.getElementById("screenText").innerHTML = rewardText;
+					emptyTimeout = Date.now() + 2000;
+					eventTimeout = Date.now() + script[0].timeout;
+					script.shift();
+					return;
 				}
-				oldColor = colors.fg;
-				colorGradient = 0.0;
 			});
 		}
 
@@ -322,7 +338,7 @@ function loop(/**@type {WebGLProgram}*/program, /**@type {Locations}*/locations)
 	// gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 	if(colorGradient != null) {
-		colorGradient += 0.05;
+		colorGradient += 0.02;
 		colors.fg = gradient(oldColor, newColor, colorGradient);
 		if(colorGradient >= 1.0)
 			colorGradient = null;
@@ -333,6 +349,15 @@ function loop(/**@type {WebGLProgram}*/program, /**@type {Locations}*/locations)
 		offsetCenter = oldOffsetCenter * (1 - offsetGradient) + newOffsetCenter * (offsetGradient);
 		if(offsetGradient >= 1.0)
 			offsetGradient = null;
+	}
+
+	if(script[0] && (Date.now() > eventTimeout)) {
+		document.getElementById("screenText").style.opacity = 1;
+		document.getElementById("screenText").innerHTML = script[0].waitText;
+	}
+	else if(emptyTimeout && (Date.now() > emptyTimeout)) {
+		document.getElementById("screenText").style.opacity = 0;
+		emptyTimeout = null;
 	}
 
 	// Load program into GPU

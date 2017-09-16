@@ -54,7 +54,7 @@ void main(void) {
 	// Stays at a constant "60.0" spin speed.
 	float timespeedup = mod(60.0*time, 120.0);
 	// RadTime is the time but in a [0, 2Pi[ range
-	float radTime = 3.1415 * timespeedup / 60.0;
+	float radTime = M_PI * timespeedup / 60.0;
 
 	// Transform (x, y) into (r, a) coordinates
 	vec2 position = -aspect.xy
@@ -64,7 +64,10 @@ void main(void) {
 	float radius = length(position);
 	
 	vec2 fgCenterA = -aspect.xy
-		+ vec2(-cos(radTime), sin(radTime)) * (offsetCenter * .1)
+		+ vec2(
+			-cos(M_PI * mod(time, 2.0 - offsetCenter)),
+			sin(M_PI * mod(time, 2.0 - offsetCenter))
+		) * (offsetCenter * .1)
 		+ 2.0 * gl_FragCoord.xy / resolution.xy * aspect.xy;
 	float angleA = getAngle(fgCenterA);
 	float radiusA = length(fgCenterA);
