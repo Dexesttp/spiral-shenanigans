@@ -46,7 +46,7 @@ void main(void) {
 			+ cos(radTime - direction * rotation * angle * outerSlope) * outerStrength
 		, 2.0))
 		, 1.0), 0.0);
-	float pulseValue = sin(mod(timespeedup * 0.0528 + radius * 20.0 + 2.0, 6.2832)) * 0.5 + 0.5;
+	float pulseValue = sin(mod(timespeedup * 0.0528 - radius * 20.0 + 2.0, 6.2832)) * 0.5 + 0.5;
 
 	float mergeValue = 0.0;
 	if(radius > 1.25) {
@@ -63,5 +63,5 @@ void main(void) {
 
 	// Mix the spin vector and the flare. This is the final step.
 	vec4 color = mix(bgColor, mix(fgColor, pulseColor, pulseValue), flareValue);
-	gl_FragColor = mix(color, mix(bgColor, fgColor, 0.5), mergeValue);
+	gl_FragColor = mix(color, bgColor, mergeValue);
 }

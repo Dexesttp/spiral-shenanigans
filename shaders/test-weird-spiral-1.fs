@@ -2,6 +2,7 @@
 #define M_2PI 6.283185307179586476925286766559
 #define M_PI_OVER_2 1.5707963267948966192313216916398
 
+
 #define C_SPIRAL_SPEED 2.0
 
 uniform float time;
@@ -25,7 +26,8 @@ float getAngle(vec2 position) {
 	return angle;
 }
 
-vec3 hsv2rgb(vec3 c) {
+vec3 hsv2rgb(vec3 c)
+{
     vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
     vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
     return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
@@ -56,14 +58,17 @@ void main(void) {
 	vec2 position = -aspect.xy + 2.0 * gl_FragCoord.xy / resolution.xy * aspect.xy;
 	float angle = getAngle(position);
 	float radius = length(position);
+	
+	vec2 fgCenterA = -aspect.xy + vec2(-cos(radTime), sin(radTime)) * (.1 + radius * .1) + 2.0 * gl_FragCoord.xy / resolution.xy * aspect.xy;
+	float angleA = getAngle(fgCenterA);
+	float radiusA = length(fgCenterA);
 
-	float bgOndul = sharpSin(
-			log(3.0 - radius) * sin(pow(2.0, radius) * 10.0 + radTime * 1.0) * 5.0
-			- angle * 5.0
-			- radTime * 2.0,
-		.7)
-		* (1.0 - min(1. / (radius * 30.0 + .1), 1.0))
-		* 0.5 + 0.5;
+
+	float bgOndul = sharpSin(log(radiusA) * 10.0 - radTime * 2.0, .7)
+				  * sin(radius * 20.0 + radTime * 1.0)
+				  * (1.0 - min(1. / (radius * 20.0 + .1), 1.0))
+				  * (1.0 - min(1. / (radiusA * 70.0 + .01), 1.0))
+				  * 0.5 + 0.5;
 
 	gl_FragColor = mix(bgColor, fgColor, bgOndul);
 }

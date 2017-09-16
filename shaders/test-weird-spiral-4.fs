@@ -58,7 +58,7 @@ void main(void) {
 	float radius = length(position);
 
 	float bgOndul = sharpSin(
-			log(3.0 - radius) * sin(pow(2.0, radius) * 10.0 + radTime * 1.0) * 5.0
+			log(3.0 - radius) * sin(radius * 5.0 - radTime * 1.0) * 10.0
 			- angle * 5.0
 			- radTime * 2.0,
 		.7)
