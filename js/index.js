@@ -89,6 +89,7 @@ var speedFactor = 1;
 var direction = 1;
 var rotation = 1;
 var branchCount = 4;
+var offsetCenter = 0.0;
 var colors = { fg: {}, bg: {}, dim: {}, pulse: {} };
 var parameters = {
 	time: 0,
@@ -99,6 +100,11 @@ var parameters = {
 var oldColor;
 var newColor;
 var colorGradient;
+
+var oldOffsetCenter;
+var newOffsetCenter;
+var offsetGradient;
+
 /** Locations buffer */
 var locations;
 
@@ -184,6 +190,16 @@ function init() {
 					case "KeyY": newColor = {r: 1.0, g: 0, b: 1.0}; break;
 					case "KeyU": newColor = {r: 1.0, g: 1.0, b: 1.0}; break;
 					case "KeyI": newColor = {r: 0, g: 0, b: 0}; break;
+					case "KeyO":
+						newOffsetCenter = 0;
+						oldOffsetCenter = offsetCenter;
+						offsetGradient = 0.0;
+						return;
+					case "KeyP":
+						newOffsetCenter = 1.0;
+						oldOffsetCenter = offsetCenter;
+						offsetGradient = 0.0;
+						return;
 					default: return;
 				}
 				oldColor = colors.fg;
@@ -246,6 +262,7 @@ function createProgram(/**@type {string}*/vertex, /**@type {string}*/fragment) {
  * @property {WebGLUniformLocation} branchCount
  * @property {WebGLUniformLocation} direction
  * @property {WebGLUniformLocation} rotation
+ * @property {WebGLUniformLocation} offsetCenter
  * @property {WebGLUniformLocation} resolution
  * @property {WebGLUniformLocation} aspect
  * @property {WebGLUniformLocation} bgColor
@@ -261,6 +278,7 @@ function getLocations(/** @type {WebGLProgram} */program) {
 		branchCount: gl.getUniformLocation(program, 'branchCount'),
 		direction: gl.getUniformLocation(program, 'direction'),
 		rotation: gl.getUniformLocation(program, 'rotation'),
+		offsetCenter: gl.getUniformLocation(program, 'offsetCenter'),
 		resolution: gl.getUniformLocation(program, 'resolution'),
 		aspect: gl.getUniformLocation(program, 'aspect'),
 		bgColor: gl.getUniformLocation(program, 'bgColor'),
@@ -309,6 +327,13 @@ function loop(/**@type {WebGLProgram}*/program, /**@type {Locations}*/locations)
 		if(colorGradient >= 1.0)
 			colorGradient = null;
 	}
+	
+	if(offsetGradient != null) {
+		offsetGradient += 0.01;
+		offsetCenter = oldOffsetCenter * (1 - offsetGradient) + newOffsetCenter * (offsetGradient);
+		if(offsetGradient >= 1.0)
+			offsetGradient = null;
+	}
 
 	// Load program into GPU
 	gl.useProgram(program);
@@ -317,6 +342,7 @@ function loop(/**@type {WebGLProgram}*/program, /**@type {Locations}*/locations)
 	gl.uniform1f(locations.branchCount, branchCount);
 	gl.uniform1f(locations.direction, direction);
 	gl.uniform1f(locations.rotation, rotation);
+	gl.uniform1f(locations.offsetCenter, offsetCenter);
 	gl.uniform2f(locations.resolution, parameters.screenWidth, parameters.screenHeight);
 	gl.uniform2f(locations.aspect, parameters.aspectX, parameters.aspectY);
 	gl.uniform4f(locations.bgColor, colors.bg.r, colors.bg.g, colors.bg.b, 1.0);
