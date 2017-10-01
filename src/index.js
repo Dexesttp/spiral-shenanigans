@@ -90,6 +90,7 @@ function init(config) {
 		branchCount: config.branchCount,
 		colors: config.colors,
 		speedFactor: config.speedFactor,
+		offsetCenter: 1.0,
 	};
 
 	// These are the URI parameters.
