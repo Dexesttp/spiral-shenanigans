@@ -17,5 +17,5 @@ function captureCanvas(canvas) {
 }
 
 function exportGif() {
-capturer.start();
+	capturer.start();
 }

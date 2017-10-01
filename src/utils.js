@@ -35,3 +35,15 @@ function hexToRgb(hex) {
         b: parseInt(resultSmall[3], 16) / 15,
 	} : null;
 }
+
+function rgbToHexInternal(r, g, b) {
+    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+
+function rgbToHex(rgb) {
+    return rgbToHexInternal(
+        Math.floor(rgb.r * 255),
+        Math.floor(rgb.g * 255),
+        Math.floor(rgb.b * 255)
+    );
+}

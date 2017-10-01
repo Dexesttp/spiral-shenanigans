@@ -108,13 +108,11 @@ function init(config) {
 				loopData = data;
 			});
 		});
+		// Base Parameters
 		document.getElementById("branch-count").value = config.branchCount;
 		document.getElementById("branch-count").addEventListener("change", function(ev) {
 			var branchCount = +(document.getElementById("branch-count").value);
-			if(branchCount > 0) {
-				setURLParameter("branch", branchCount);
-				parameters.branchCount = branchCount;
-			}
+			if(branchCount > 0) { setURLParameter("branch", branchCount); parameters.branchCount = branchCount; }
 		});
 		document.getElementById("counterclockwise").checked = config.rotation === -1;
 		document.getElementById("counterclockwise").addEventListener("change", function(ev) {
@@ -128,6 +126,32 @@ function init(config) {
 			addOrRemoveParameter("inwards", checked);
 			parameters.direction = checked ? 1 : -1;
 		});
+		// Colors parameters
+		document.getElementById("bg-color").value = rgbToHex(config.colors.bg);
+		document.getElementById("bg-color").addEventListener("change", function(ev) {
+			var value = (document.getElementById("bg-color").value).substr(1);
+			var color = hexToRgb(value);
+			if(color) { setURLParameter("bg", value); parameters.colors.bg = color; }
+		});
+		document.getElementById("fg-color").value = rgbToHex(config.colors.fg);
+		document.getElementById("fg-color").addEventListener("change", function(ev) {
+			var value = (document.getElementById("fg-color").value).substr(1);
+			var color = hexToRgb(value);
+			if(color) { setURLParameter("fg", value); parameters.colors.fg = color; }
+		});
+		document.getElementById("pulse-color").value = rgbToHex(config.colors.pulse);
+		document.getElementById("pulse-color").addEventListener("change", function(ev) {
+			var value = (document.getElementById("pulse-color").value).substr(1);
+			var color = hexToRgb(value);
+			if(color) { setURLParameter("pulse", value); parameters.colors.pulse = color; }
+		});
+		document.getElementById("dim-color").value = rgbToHex(config.colors.dim);
+		document.getElementById("dim-color").addEventListener("change", function(ev) {
+			var value = (document.getElementById("dim-color").value).substr(1);
+			var color = hexToRgb(value);
+			if(color) { setURLParameter("dim", value); parameters.colors.dim = color; }
+		});
+		console.log(rgbToHex(config.colors.pulse));
 		// Display the area
 		document.getElementById("interface").style.display = "";
 		document.getElementById("test").classList.add("hasInterface");
