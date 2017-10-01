@@ -36,12 +36,6 @@ float sharpSin(float inputValue, float percent) {
 	return sin(value / percent + M_2PI - (M_2PI / percent));
 }
 
-vec3 hsv2rgb(vec3 c) {
-    vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
-    vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
-    return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
-}
-
 // Main method : entry point of the application.
 // NOTE
 // Only have one variable set each time (if you uncomment a line, comment the alternative line)
@@ -56,37 +50,28 @@ void main(void) {
 	float radius = length(position);
 	float angle = getAngle(position);
 
-	// The inner slope.
-	// This slope is weird. If you put both inner and outer at the same value you get a rotating circle.
-	float innerSlope = 5.0;
-	// The outer slope. Same rules as above.
-	float outerSlope = 7.0;
-	// The speed of the spiral.
-	float innerSpeed = 2.0;
-	// This is the value multiplier for the inner data. Setting it to more than 0.5 will make some parts disappear.
-	float innerStrength = 0.5;
-	// This is the value multiplier for the outer data. Setting it to more than 0.5 will make some parts disappear
-	float outerStrength = 0.75;
-	// Influences the slope of the spiral
-	float spiralSlope = 10.0;
-	
+	// The commented line remove the spiral totally, allowing you to test the dim algorithm.
+	// float spinValue = 1.0;
 	float spinValue = sharpSin(
-		radius * pow(
-			cos(radius * branchCount * spiralSlope + direction * radTime * innerSpeed - rotation * angle * innerSlope) * innerStrength
-			+ cos(radTime - direction * rotation * angle * outerSlope) * outerStrength
-		, 2.0)
-	, 0.7);
-
-	vec4 iridiscence = vec4(hsv2rgb(vec3(sharpSin(radTime - radius, 0.9) * 0.1, 1.0, 1.0)), 1.0);
+		log(radius) * 10.0
+		+ direction * angle * branchCount
+		- radTime * rotation * 3.0
+	, 0.7 - max(0.1 - radius * 0.001, .0)) * 0.5 + 0.5;
+	float maskValue = sharpSin(
+		log(radius) * 10.0
+		- direction * angle * branchCount * 2.0
+		- radTime * rotation * 6.0
+	, 0.7 - max(0.1 - radius * 0.001, .0)) * 0.5 + 0.5;
+	float maskedSpinValue = max(spinValue - max(maskValue, 0.0), 0.0);
 
 	// This is the color value at a given point of the spin
-	vec4 spinVector = mix(bgColor, iridiscence, spinValue);
+	vec4 spinVector = mix(bgColor, fgColor, maskedSpinValue);
 
 	// Add a flare in the middle of the spiral to hide the moiré effects when the spiral gets tiny.
 	// The flare holds for 10% of the radius unit, and starts at -0.1.
 	// 0.1 => percent of the picture used for the flare
 	// -0.1 => starting offset
-	float flareValue = max(0.0, min(radius / 0.1 - 0.4, 1.0));
+	float flareValue = max(0.0, min(radius / 0.05 - 0.4, 1.0));
 
 	// Mix the spin vector and the flare. This is the final step.
 	gl_FragColor = mix(bgColor, spinVector, flareValue);

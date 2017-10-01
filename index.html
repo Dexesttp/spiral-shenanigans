@@ -15,38 +15,57 @@
 			color: #EEE;
 			background: #222;
 		}
+		#interface {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 30%;
+			height: 100%;
+			background: #333;
+			text-align: center;
+		}
 		#test, #test > canvas {
 			margin: 0;
 			padding: 0;
 		}
-		#info {
-			position: absolute;
-			top: 0;
-			left: 0;
-		}
-		#btninfo {
-			position: absolute;
-			bottom: 0;
-			left: 0;
+		#test.hasInterface {
+			margin-left: 30%;
 		}
 	</style>
 </head>
 <body>
-	<div style="position: absolute; z-index: -1; width: 100; height: 100%; text-align: center; margin-top: auto; margin-bottom:auto; font-size: 5em;">
-		Test
-	</div>
+	<!-- Text area -->
 	<div style="position: absolute; top: 50vh; left: 50vw;">
 		<div id="screenText" style="transform: translate(-50%, -150%); transition: 1s opacity; opacity: 0; font-family: Roboto, Arial, sans-serif; font-size: 3em; text-align: center">
 		</div>
 	</div>
-	<div id="test">
+	<div id="interface" style="display: none">
+		<label>Spiral : <select id="shaders-list"></select></label><br />
+		<br />
+		<label>Number of branches : <input id="branch-count" type="number"></label><br />
+		<label>Counterclockwise <input id="counterclockwise" type="checkbox"></label><br />
+		<label>Inwards <input id="inwards" type="checkbox"></label><br />
+		<br />
+		<button onclick="largeInterface()">Large spiral</button><br />
+		<button onclick="smallInterface()">Small spiral (for export)</button><br />
+		<button onclick="exportGif()">Export as gif</button><br />
+		<br />
+		<button onclick="fullScreen()">Full screen</button>
 	</div>
-	<div id="info"></div>
-	<button id="exportButton" onclick="exportGif()">Start export</button>
+	<div id="test">
+		<canvas id="canvas"></canvas>
+	</div>
+	<script src="js/url-search-params-polyfill.js"></script>
 	<script src="js/es6-promise.auto.min.js"></script>
 	<script src="js/fetch.js"></script>
 	<script src="js/moment.js"></script>
 	<script src="js/CCapture.all.min.js"></script>
-	<script src="js/index.js"></script>
+	<script src="src/shaders-list.js"></script>
+	<script src="src/constants.js"></script>
+	<script src="src/utils.js"></script>
+	<script src="src/config.js"></script>
+	<script src="src/canvas.js"></script>
+	<script src="src/export.js"></script>
+	<script src="src/index.js"></script>
 </body>
 </html>
