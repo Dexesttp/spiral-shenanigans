@@ -53,7 +53,7 @@ const fileNames = [
 	const page = await browser.newPage();
 	process.stdout.write(`Browser started at ${moment().format("YYYY-MM-DD HH:mm:ss")}\n`);
 	for(let fileName of fileNames) {
-		await page.goto(`http://localhost:9080?showButton&canvas=${canvasSize}&file=${fileName}&exportName=${fileName}`);
+		await page.goto(`http://localhost:9080?canvas=${canvasSize}&file=${fileName}&exportName=${fileName}`);
 		process.stdout.write(`Opening ${fileName}... `);
 		await page.waitFor(200);
 		const button = await page.$("#exportButton");

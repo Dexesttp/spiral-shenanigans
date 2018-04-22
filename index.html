@@ -6,7 +6,7 @@
 	<meta name="twitter:card" content="summary" />
 	<meta name="twitter:title" content="Spirals Shenanigans" />
 	<meta name="twitter:description" content="Customize and export spirals." />
-	<meta name="twitter:image" content="https://dexesttp.github.io/preview.png" />
+	<meta name="twitter:image" content="https://dexesttp.github.io/spiral-shenanigans/preview.png" />
 	<meta name="twitter:image:alt" content="Spiral preview." />
 	<style>
 		html, body {
@@ -53,7 +53,7 @@
 		<br />
 		<button onclick="largeInterface()">Large spiral</button><br />
 		<button onclick="smallInterface()">Small spiral (for export)</button><br />
-		<button onclick="exportGif()">Export as gif</button><br />
+		<button id="exportButton" onclick="exportGif()">Export as gif</button><br />
 		<br />
 		<button onclick="fullScreen()">Full screen</button>
 	</div>
@@ -63,7 +63,6 @@
 	<script src="js/url-search-params-polyfill.js"></script>
 	<script src="js/es6-promise.auto.min.js"></script>
 	<script src="js/fetch.js"></script>
-	<script src="js/moment.js"></script>
 	<script src="js/CCapture.all.min.js"></script>
 	<script src="src/shaders-list.js"></script>
 	<script src="src/constants.js"></script>
