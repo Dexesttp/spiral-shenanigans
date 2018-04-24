@@ -20,19 +20,6 @@ var eventTimeout = Date.now() + 5000;
 var emptyTimeout = 0.;
 
 var script = [];
-/*
-var parameters = {
-	time: 0,
-	screenWidth: 0,
-	screenHeight: 0,
-    direction: 1,
-    rotation: 1,
-    branchCount: 4,
-    speedFactor: 1,
-    offsetCenter: 0.,
-    colors: { fg: {}, bg: {}, dim: {}, pulse: {} },
-};
-*/
 
 var loopData;
 
@@ -152,7 +139,11 @@ function init(config) {
 			var color = hexToRgb(value);
 			if(color) { setURLParameter("dim", value); parameters.colors.dim = color; }
 		});
-		console.log(rgbToHex(config.colors.pulse));
+		document.getElementById("speed-value").value = config.speedFactor;
+		document.getElementById("speed-value").addEventListener("change", function(ev) {
+			var speedFactor = +(document.getElementById("speed-value").value);
+			if(speedFactor > 0) { setURLParameter("speed", speedFactor); parameters.speedFactor = speedFactor; }
+		});
 		// Display the area
 		document.getElementById("interface").style.display = "";
 		document.getElementById("test").classList.add("hasInterface");
