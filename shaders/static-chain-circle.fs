@@ -53,21 +53,22 @@ void main(void) {
 	vec2 position = -aspect.xy + 2.0 * gl_FragCoord.xy / resolution.xy * aspect.xy;
 	float radius = length(position);
 	float angle = getAngle(position);
+	
+	float threshold = float(int(radius * M_PI)) * 5.0;
 
-	float bumpFactor = log(radius + 2.0) * 1.0 * (sin(5.0 * radius + direction * radTime) * 0.5 + 0.5);
-	float bumpValue = pow(abs(cos(10.0 * angle + radTime)), 0.25);
-	float spiralValue = 20.0 * log(radius + 1.0) + branchCount * rotation * angle + 2.0 * direction * radTime;
-	float adjustValue = 0.8;
-
-	float spinValue = adjust(sin(spiralValue + bumpFactor * bumpValue), adjustValue); /* [0, 1] */
-	float spinValue2 = adjust(sin(spiralValue - bumpFactor * bumpValue), adjustValue); /* [0, 1] */
-	float allValue = spinValue * spinValue2;
+	float bumpValue = pow(abs(cos(angle * threshold + radTime)), 0.25);
+	float bumpValue2 = pow(abs(cos(angle * threshold - radTime)), 0.25);
+	float spinValue = adjust(sin(20.0 * radius + 1.0 * bumpValue), 0.9); /* [0, 1] */
+	float spinValue2 = adjust(sin(20.0 * radius - 1.0 * bumpValue), 0.9); /* [0, 1] */
+	float spinValue3 = adjust(sin(20.0 * radius + 1.0 * bumpValue2), 0.9); /* [0, 1] */
+	float spinValue4 = adjust(sin(20.0 * radius - 1.0 * bumpValue2), 0.9); /* [0, 1] */
+	float allValue = mix(spinValue * spinValue2, spinValue3 * spinValue4, 0.5 * sharpSin(radius * 10.0, 0.1) + 0.5);
 
 	// Add a flare in the middle of the spiral to hide the moiré effects when the spiral gets tiny.
 	// The flare holds for 10% of the radius unit, and starts at -0.1.
 	// 0.1 => percent of the picture used for the flare
 	// -0.1 => starting offset
-	float flareValue = max(0.0, min(radius / 0.08 - 0.4, 1.0));
+	float flareValue = max(0.0, min(radius / 0.05 - 0.4, 1.0));
 
 	// Mix the spin vector and the flare. This is the final step.
 	gl_FragColor = mix(bgColor, mix(fgColor, bgColor, allValue), flareValue);
