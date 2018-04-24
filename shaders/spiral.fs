@@ -23,25 +23,21 @@ float getAngle(vec2 position) {
 	return angle;
 }
 
-float getSpin(
-	float radius,
-	float angle,
-	float radTime,
-	float offset,
-	float factor
-) {
-	return (min(
-		sin(
-			(
-				10.0 * log(radius + 1.0)
-				+ sin(5.0 * angle + offset) * sin(2.0 * radTime + factor * radius) * 0.1 * (radius + 1.0)
-				+ 1.0
-			) * 5.0
-			+ 4.0 * radTime
-			+ angle
-		) + 1.95,
-		1.0
-	) - 0.95) * 20.0;
+float sharpSin(float inputValue, float percent) {
+	float value = mod(inputValue, M_2PI);
+	if(value < M_PI_OVER_2 * percent)
+		return sin(value / percent);
+	if(value < M_PI - M_PI_OVER_2 * percent)
+		return 1.0;
+	if(value < M_PI + M_PI_OVER_2 * percent)
+		return sin(value / percent + M_PI - (M_PI / percent));
+	if(value < M_2PI - M_PI_OVER_2 * percent)
+		return - 1.0;
+	return sin(value / percent + M_2PI - (M_2PI / percent));
+}
+
+float adjust(float value, float threshold) {
+	return (min(value + 1.0 + threshold, 1.0) - threshold) / (1.0 - threshold);
 }
 
 // Main method : entry point of the application.
@@ -57,16 +53,16 @@ void main(void) {
 	vec2 position = -aspect.xy + 2.0 * gl_FragCoord.xy / resolution.xy * aspect.xy;
 	float radius = length(position);
 	float angle = getAngle(position);
+	
+	float threshold = float(int(radius * M_PI)) * 5.0;
 
-	float spinValue = getSpin(radius, - rotation * angle * branchCount, direction * radTime, 0.0, 4.0);
-	float spinValue2 = getSpin(radius, - rotation * angle * branchCount, direction * radTime, M_PI_OVER_2, 2.0);
-
-	// This is the color value at a given point of the spin
-	vec4 spinVector = mix(
-		mix(fgColor, pulseColor, (spinValue - spinValue2) / 2.0 + 0.5),
-		bgColor,
-		spinValue * spinValue2
-	);
+	float bumpValue = pow(abs(cos(angle * threshold + radTime)), 0.25);
+	float bumpValue2 = pow(abs(cos(angle * threshold - radTime)), 0.25);
+	float spinValue = adjust(sin(20.0 * radius + 1.0 * bumpValue), 0.9); /* [0, 1] */
+	float spinValue2 = adjust(sin(20.0 * radius - 1.0 * bumpValue), 0.9); /* [0, 1] */
+	float spinValue3 = adjust(sin(20.0 * radius + 1.0 * bumpValue2), 0.9); /* [0, 1] */
+	float spinValue4 = adjust(sin(20.0 * radius - 1.0 * bumpValue2), 0.9); /* [0, 1] */
+	float allValue = mix(spinValue * spinValue2, spinValue3 * spinValue4, 0.5 * sharpSin(radius * 10.0, 0.1) + 0.5);
 
 	// Add a flare in the middle of the spiral to hide the moiré effects when the spiral gets tiny.
 	// The flare holds for 10% of the radius unit, and starts at -0.1.
@@ -75,5 +71,5 @@ void main(void) {
 	float flareValue = max(0.0, min(radius / 0.05 - 0.4, 1.0));
 
 	// Mix the spin vector and the flare. This is the final step.
-	gl_FragColor = mix(bgColor, spinVector, flareValue);
+	gl_FragColor = mix(bgColor, mix(fgColor, bgColor, allValue), flareValue);
 }
