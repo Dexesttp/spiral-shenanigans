@@ -5,6 +5,7 @@ var shadersList = [
     "full-breathe",
     "full-dot-pulse",
     "full-dot",
+    "full-doublesine-twisted",
     "full-doublesine",
     "full-doublestream",
     "full-equal-branches-pulse",

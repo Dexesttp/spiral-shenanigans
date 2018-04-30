@@ -80,6 +80,7 @@ void main(void) {
 		bgColor,
 		spinValue * spinValue2
 	);
+	
 
 	float spinValue3 = getSpin(radius, rotation * angle * branchCount, direction * radTime, 0.0, 4.0);
 	float spinValue4 = getSpin(radius, rotation * angle * branchCount, direction * radTime, M_PI_OVER_2, 2.0);
