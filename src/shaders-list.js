@@ -31,6 +31,7 @@ var shadersList = [
     "pendulum-circles",
     "pendulum-disc",
     "pendulum-dot",
+    "pendulum-doublesine",
     "pendulum-oval-intermittent-spiral",
     "pendulum-oval",
     "pendulum-spiral-alt",
