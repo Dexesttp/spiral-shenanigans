@@ -36,9 +36,9 @@ void main(void) {
 	// Transform (x, y) into (r, a) coordinates based on the position offset defined as above
 	vec2 root = -aspect.xy + 2.0 * gl_FragCoord.xy / resolution.xy * aspect.xy;
 	vec2 position = -aspect.xy + 2.0 * gl_FragCoord.xy / resolution.xy * aspect.xy + timePositionOffset;
-	float angle = 0.0 ;
+	float angle = 0.0;
 	float radius = length(position);
-	if (position.x != 0.0 && position.y != 0.0){
+	if (position.x != 0.0 || position.y != 0.0) {
 		angle = atan(position.y,position.x);
 	}
 

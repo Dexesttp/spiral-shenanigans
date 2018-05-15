@@ -16,8 +16,8 @@ uniform vec4 pulseColor;
 uniform vec4 dimColor;
 
 float getAngle(vec2 position) {
-	float angle = 0.0 ;
-	if (position.x != 0.0 && position.y != 0.0){
+	float angle = 0.0;
+	if (position.x != 0.0 || position.y != 0.0) {
 		angle = atan(position.y, position.x);
 	}
 	return angle;

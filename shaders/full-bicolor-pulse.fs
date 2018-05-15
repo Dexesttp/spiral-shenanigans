@@ -16,10 +16,10 @@ void main(void) {
 
 	// Transform (x, y) into (r, a) coordinates based on (0, 0) defined as below
 	vec2 position = -aspect.xy + 2.0 * gl_FragCoord.xy / resolution.xy * aspect.xy;
-	float angle = 0.0 ;
-	float radius = length(position) ;
-	if (position.x != 0.0 && position.y != 0.0){
-		angle = degrees(atan(position.y,position.x)) ;
+	float angle = 0.0;
+	float radius = length(position);
+	if (position.x != 0.0 || position.y != 0.0) {
+		angle = degrees(atan(position.y, position.x));
 	}
 
 	float spinValue = mod(- direction * rotation * angle - direction * 1.5 * timespeedup - 120.0*log(radius), 360.0 / branchCount) * 0.1 + 3.141;

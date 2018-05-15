@@ -2,10 +2,8 @@
 #define M_2PI 6.283185307179586476925286766559
 #define M_PI_OVER_2 1.5707963267948966192313216916398
 
-#define C_inter_pattern 3.0
-#define C_pattern_spin 0.75
-#define C_rotation_speed 3.0
-#define C_rotation_speed_2 5.0
+
+#define C_SPIRAL_SPEED 2.0
 
 uniform float time;
 uniform float branchCount;
@@ -27,7 +25,8 @@ float getAngle(vec2 position) {
 	return angle;
 }
 
-vec3 hsv2rgb(vec3 c) {
+vec3 hsv2rgb(vec3 c)
+{
     vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
     vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
     return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
@@ -55,17 +54,30 @@ void main(void) {
 	float radTime = 3.1415 * timespeedup / 60.0;
 
 	// Transform (x, y) into (r, a) coordinates
-	vec2 position = -aspect.xy
-		+ 2.0 * gl_FragCoord.xy / resolution.xy * aspect.xy;
+	vec2 position = -aspect.xy + 2.0 * gl_FragCoord.xy / resolution.xy * aspect.xy;
 	float angle = getAngle(position);
 	float radius = length(position);
-	float angleOffset = 0.0;
+	
+	vec2 fgCenterA = -aspect.xy + vec2(-2.0, 0.0) * (.1 + radius * .1) + 2.0 * gl_FragCoord.xy / resolution.xy * aspect.xy;
+	float angleA = getAngle(fgCenterA);
+	float radiusA = length(fgCenterA);
+	
+	vec2 fgCenterB = -aspect.xy + vec2(2.0, 0.0) * (.1 + radius * .1) + 2.0 * gl_FragCoord.xy / resolution.xy * aspect.xy;
+	float angleB = getAngle(fgCenterB);
+	float radiusB = length(fgCenterB);
 
-	float bgOndul = (sharpSin(
-			log(radius + .5 + .5*sin(radTime)) * 20.0
-			- angle * 5.0,
-		.7 - max(radius - 2.0, .0)) * 0.5 + 0.5)
-		* (1.0 - min(1. / (radius * (5.0 / branchCount) * max(resolution.x, resolution.y) / 10. + .1), 1.0));
+	float bgOndul = sharpSin(
+			log(abs(10.0 * radiusA - radius * sin(radTime) + 0.1)) * 10.0
+			+ log(abs(10.0 * radiusB - radius * sin(-radTime) + 0.1)) * 10.0
+			+ angle * 6.0
+			- radTime * 6.0
+		, .7)
+		* 0.5 + 0.5;
+	float fullValue = bgOndul * max(1.0
+		- min(1. / (radiusA * 80.0 * (sin(-radTime) * 0.5 + 1.0) + .1), 1.0)
+		- min(1. / (radiusB * 80.0 * (sin(radTime) * 0.5 + 1.0) + .1), 1.0)
+		, 0.0
+	);
 
-	gl_FragColor = mix(bgColor, vec4(hsv2rgb(vec3(0.5*sin(radius - radTime), 0.5, 1.0)), 1.0), bgOndul);
+	gl_FragColor = mix(bgColor, fgColor, fullValue);
 }

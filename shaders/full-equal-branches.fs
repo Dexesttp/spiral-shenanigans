@@ -15,9 +15,9 @@ void main(void) {
 
 	// Transform (x, y) into (r, a) coordinates based on (0, 0) defined as below
 	vec2 position = -aspect.xy + 2.0 * gl_FragCoord.xy / resolution.xy * aspect.xy;
-	float angle = 0.0 ;
-	float radius = length(position) ;
-	if (position.x != 0.0 && position.y != 0.0){
+	float angle = 0.0;
+	float radius = length(position);
+	if (position.x != 0.0 || position.y != 0.0) {
 		angle = degrees(atan(position.y,position.x)) ;
 	}
 

@@ -2,7 +2,7 @@
 #define M_2PI 6.283185307179586476925286766559
 #define M_PI_OVER_2 1.5707963267948966192313216916398
 
-
+#define MAX_VALUES 4
 #define C_SPIRAL_SPEED 2.0
 
 uniform float time;
@@ -25,13 +25,6 @@ float getAngle(vec2 position) {
 	return angle;
 }
 
-vec3 hsv2rgb(vec3 c)
-{
-    vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
-    vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
-    return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
-}
-
 float sharpSin(float inputValue, float percent) {
 	float value = mod(inputValue, M_2PI);
 	if(value < M_PI_OVER_2 * percent)
@@ -45,6 +38,28 @@ float sharpSin(float inputValue, float percent) {
 	return sin(value / percent + M_2PI - (M_2PI / percent));
 }
 
+float computeValue(
+	float angle,
+	float radius,
+	float radTime,
+	vec2[MAX_VALUES] dots,
+	float[MAX_VALUES] strengths
+) {
+	float logVariation = 0.0;
+	float minVariation = 0.0;
+	for(int i = 0; i < MAX_VALUES; i++) {
+		vec2 dot = dots[i];
+		float strength = strengths[i];
+		vec2 fgCenterA = -aspect.xy + dot * (.1 + radius * .1) + 2.0 * gl_FragCoord.xy / resolution.xy * aspect.xy;
+		float angleA = getAngle(fgCenterA);
+		float radiusA = length(fgCenterA);
+		logVariation += log(abs(10.0 * radiusA - radius * 0.2 + 0.1)) * 10.0;
+		minVariation += min(1. / (radiusA * 80.0 * (sin(radTime) * 0.5 + 1.0) + .1), 1.0);
+	}
+	float bgOndul = sharpSin(logVariation - radTime * 2.0 + angle * 6.0, 0.7) * 0.5 + 0.5;
+	return bgOndul * max(1.0 - minVariation, 0.0);
+}
+
 // Main method : entry point of the application.
 void main(void) {
 	// This variable is used for time manipulation.
@@ -52,22 +67,26 @@ void main(void) {
 	float timespeedup = mod(60.0*time, 120.0);
 	// RadTime is the time but in a [0, 2Pi[ range
 	float radTime = 3.1415 * timespeedup / 60.0;
+	// float radTime = 0.0;
 
 	// Transform (x, y) into (r, a) coordinates
 	vec2 position = -aspect.xy + 2.0 * gl_FragCoord.xy / resolution.xy * aspect.xy;
 	float angle = getAngle(position);
 	float radius = length(position);
-	
-	vec2 fgCenterA = -aspect.xy + vec2(-cos(radTime), sin(radTime)) * (.1 + radius * .1) + 2.0 * gl_FragCoord.xy / resolution.xy * aspect.xy;
-	float angleA = getAngle(fgCenterA);
-	float radiusA = length(fgCenterA);
 
+	// mat2 rotationMatrix = mat2(cos(radTime), -sin(radTime), sin(radTime), cos(radTime));
 
-	float bgOndul = sharpSin(log(radiusA) * 10.0 - radTime * 2.0, .7)
-				  * sin(angle * 10.0 - radius * 20.0 + radTime * 5.0)
-				  * (1.0 - min(1. / (radius * 20.0 + .1), 1.0))
-				  * (1.0 - min(1. / (radiusA * 70.0 + .01), 1.0))
-				  * 0.5 + 0.5;
+	vec2 dots[MAX_VALUES];
+	dots[0] = vec2(0.0, 0.0);
+	dots[1] = vec2(1.0, 3.0) * 1.5;
+	dots[2] = vec2(0.0, 0.0);
+	dots[3] = vec2(1.0, -3.0) * 2.0;
+	float strengths[MAX_VALUES];
+	strengths[0] = 1.0;
+	strengths[1] = 1.0;
+	strengths[2] = 1.0;
+	strengths[3] = 1.0;
+	float fullValue = computeValue(angle, radius, radTime, dots, strengths);
 
-	gl_FragColor = mix(bgColor, fgColor, bgOndul);
+	gl_FragColor = mix(bgColor, fgColor, fullValue);
 }

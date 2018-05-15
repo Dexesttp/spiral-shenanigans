@@ -14,10 +14,10 @@ void main(void) {
 	float timespeedup = mod(60.0*time, 120.0);
 
 	vec2 position = -aspect.xy + 2.0 * gl_FragCoord.xy / resolution.xy * aspect.xy;
-	float angle = 0.0 ;
+	float angle = 0.0;
 	float radius = length(position);
-	if (position.x != 0.0 && position.y != 0.0){
-		angle = degrees(atan(position.y,position.x)) ;
+	if (position.x != 0.0 || position.y != 0.0) {
+		angle = degrees(atan(position.y,position.x));
 	}
 
 	float spinValue = mod(- rotation * angle - direction * timespeedup * 3.0 / branchCount - 120.0*log(radius), 360.0 / branchCount) * 0.1 + 3.141;

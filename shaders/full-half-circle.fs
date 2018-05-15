@@ -76,10 +76,10 @@ void main(void) {
 	vec2 timePositionOffset = vec2(cos(timespeedup * 0.0528), sin(timespeedup * 0.0528));
 	vec2 position = -aspect.xy + 2.0 * gl_FragCoord.xy / resolution.xy * aspect.xy;
 	//vec2 position = -aspect.xy + 2.0 * gl_FragCoord.xy / resolution.xy * aspect.xy + 0.25 * timePositionOffset;
-	float angle = 0.0 ;
+	float angle = 0.0;
 	float radius = length(position);
-	if (position.x != 0.0 && position.y != 0.0){
-		angle = atan(position.y,position.x);
+	if (position.x != 0.0 || position.y != 0.0) {
+		angle = atan(position.y, position.x);
 	}
 
 	// Add a flare in the middle of the spiral to hide the moiré effects when the spiral gets tiny.

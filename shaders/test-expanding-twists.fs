@@ -43,10 +43,10 @@ void main(void) {
 
 	// Transform (x, y) into (r, a) coordinates
 	vec2 position = -aspect.xy + 2.0 * gl_FragCoord.xy / resolution.xy * aspect.xy;
-	float angle = 0.0 ;
+	float angle = 0.0;
 	float radius = length(position);
-	if (position.x != 0.0 && position.y != 0.0){
-		angle = atan(position.y,position.x);
+	if (position.x != 0.0 || position.y != 0.0) {
+		angle = atan(position.y, position.x);
 	}
 
 	if(radius == 0.0)
