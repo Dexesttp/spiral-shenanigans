@@ -16,9 +16,6 @@ uniform float lowerLimit;
 uniform vec4 bgColor;
 uniform vec4 fgColor;
 
-#define MAX_VALUES 4
-uniform vec2 dotList[MAX_VALUES];
-uniform float strengthList[MAX_VALUES];
 
 float getAngle(vec2 position) {
 	float angle = 0.0;
@@ -59,8 +56,9 @@ void main(void) {
 	float angle = getAngle(position);
 	float radius = length(position);
 
-	vec2 dots[MAX_VALUES];
 	mat2 rotationMatrix = mat2(cos(2. * radTime), -sin(2. * radTime), sin(2. * radTime), cos(2. * radTime));
+#define MAX_VALUES 4
+	vec2 dots[MAX_VALUES];
 	dots[0] = vec2(0.0, 0.0);
 	dots[1] = vec2(2.0, 2.0) * rotationMatrix;
 	dots[2] = vec2(0.0, -3.0) * rotationMatrix;

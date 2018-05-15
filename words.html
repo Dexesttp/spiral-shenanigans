@@ -1,0 +1,384 @@
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Words on spiral</title>
+	<link rel="icon" href="favicon.png">
+	<meta name="twitter:card" content="summary" />
+	<meta name="twitter:title" content="Words on a spiral" />
+	<meta name="twitter:description" content="This spiral actually has words on it." />
+	<meta name="twitter:image" content="https://dexesttp.github.io/spiral-shenanigans/preview.png" />
+	<meta name="twitter:image:alt" content="Generic spiral preview." />
+	<style>
+		html, body {
+			margin: 0;
+			padding: 0;
+			color: #EEE;
+			background: #222;
+		}
+		canvas {
+			margin: 0;
+			padding: 0;
+		}
+	</style>
+</head>
+<body>
+	<canvas id="canvas"></canvas>
+	<script>
+		/**
+		 * Interval between two frames.
+		 */
+		var TIME_INTERVAL = 30;
+		function getConfigFromURL() {
+			var params = new URLSearchParams(window.location.search);
+			return {
+				speedFactor: +params.get("speed") || 1,
+				rotation: !params.has("counterclockwise") ? 1 : -1,
+				direction: !params.has("inwards") ? -1 : 1,
+				branchCount: +params.get("branch") || 4,
+				// These colors are stored as rgba() vectors. red, green, and blue should be between 0 and 1. Let alpha be at 1.
+				colors: {
+					bg: hexToRgb(params.get("bg")) || {r: 0, g: 0, b: 0},
+					fg: hexToRgb(params.get("fg")) || {r: 1.0, g: 1.0, b: 1.0},
+					pulse: hexToRgb(params.get("pulse")) || {r: 0.7, g: 0.3, b: 0.9},
+					dim: hexToRgb(params.get("dim")) || {r: 0, g: 0, b: 0},
+				},
+			};
+		}
+
+		function GetBaseParameters(config) {
+			return {
+				time: 0,
+				screenWidth: 0,
+				screenHeight: 0,
+				direction: config.direction,
+				rotation: config.rotation,
+				branchCount: config.branchCount,
+				colors: config.colors,
+				speedFactor: config.speedFactor,
+				lowerLimit: 0.1,
+				strengthList: [10.0, 0.0, 0.0, 5.0],
+				dotList: [
+					0.0, 0.0,
+					2.0, 0.0,
+					-2.0, -2.0,
+					-2.0, 2.0,
+				],
+			};
+		}
+
+		var posX = 4.0;
+		var posY = 4.0;
+
+		function loopEvolve(parameters) {
+			parameters.dotList[6] = posX;
+			parameters.dotList[7] = posY;
+		}
+
+		document.getElementsByTagName("canvas")[0].onmousemove = function(event) {
+			posX = - 20 * (event.clientX - window.innerWidth / 2) / (window.innerWidth + window.innerHeight);
+			posY = 10 * event.clientY / window.innerHeight - 5.0;
+		};
+
+	</script>
+	<script id="shader" type="text/shader">
+		#define MAX_VALUES 4
+
+		#define M_PI 3.1415926535897932384626433832795
+		#define M_2PI 6.283185307179586476925286766559
+		#define M_PI_OVER_2 1.5707963267948966192313216916398
+
+		#define C_SPIRAL_SPEED 2.0
+
+		uniform float time;
+		uniform vec2 resolution;
+		uniform vec2 aspect;
+
+		uniform float branchCount;
+		uniform float direction;
+		uniform float rotation;
+		uniform float lowerLimit;
+
+		uniform vec4 bgColor;
+		uniform vec4 fgColor;
+
+		uniform vec2 dotList[MAX_VALUES];
+		uniform float strengthList[MAX_VALUES];
+
+		float getAngle(vec2 position) {
+			float angle = 0.0;
+			if (position.x != 0.0 || position.y != 0.0) {
+				angle = atan(position.y, position.x);
+			}
+			return angle;
+		}
+
+		float sharpSin(float inputValue, float percent) {
+			float value = mod(inputValue, M_2PI);
+			if(value < M_PI_OVER_2 * percent)
+				return sin(value / percent);
+			if(value < M_PI - M_PI_OVER_2 * percent)
+				return 1.0;
+			if(value < M_PI + M_PI_OVER_2 * percent)
+				return sin(value / percent + M_PI - (M_PI / percent));
+			if(value < M_2PI - M_PI_OVER_2 * percent)
+				return - 1.0;
+			return sin(value / percent + M_2PI - (M_2PI / percent));
+		}
+
+		float offsetSin(float inputValue, float percent) {
+			return (min(sin(inputValue) + 2.0 - percent, 1.0) - 1.0 + percent) * (1.0 / percent);
+		}
+
+		// Main method : entry point of the application.
+		void main(void) {
+			// This variable is used for time manipulation.
+			// Stays at a constant "60.0" spin speed.
+			float timespeedup = mod(60.0*time, 120.0);
+			// RadTime is the time but in a [0, 2Pi[ range
+			float radTime = 3.1415 * timespeedup / 60.0;
+			// float radTime = M_PI;
+
+			// Transform (x, y) into (r, a) coordinates
+			vec2 position = -aspect.xy + 2.0 * gl_FragCoord.xy / resolution.xy * aspect.xy;
+			float angle = getAngle(position);
+			float radius = length(position);
+
+			vec2 dots[MAX_VALUES];
+			mat2 rotationMatrix = mat2(cos(2. * radTime), -sin(2. * radTime), sin(2. * radTime), cos(2. * radTime));
+			dots[0] = vec2(0.0, 0.0);
+			dots[1] = vec2(2.0, 2.0) * rotationMatrix;
+			dots[2] = vec2(0.0, -3.0) * rotationMatrix;
+			dots[3] = vec2(-2.0, -2.0) * rotationMatrix;
+			float strengths[MAX_VALUES];
+			strengths[0] = 10.0;
+			strengths[1] = 0.0;
+			strengths[2] = 5.0 * (0.5 * sharpSin(radTime, 0.7) + 0.5);
+			strengths[3] = 5.0 * (0.5 * sharpSin(radTime, 0.7) + 0.5);
+
+			float logVariation = 0.;
+			float radiusProximity = radius;
+			float minVariation = 0.0;
+			for(int i = 0; i < MAX_VALUES; i++) {
+				vec2 dot = dotList[i];
+				float strength = strengthList[i];
+				vec2 fgCenterA = -aspect.xy + dot * (.1 + radius * .1) + 2.0 * gl_FragCoord.xy / resolution.xy * aspect.xy;
+				float radiusA = length(fgCenterA);
+				if(strength > 0.) {
+					radiusProximity = min(radiusProximity, (radiusA) / (radius * strength * .5));
+				}
+				logVariation += log(abs(radiusA - 0.1 * radius + 0.1)) * strength;
+				minVariation += .1 * exp(radius) * strength * min(1. / (radiusA * 50.0 + .1), 1.0);
+			}
+			float bgOndul = 1.0 - offsetSin(
+				logVariation + rotation * angle * branchCount + direction * radTime * 2.0,
+				max(0.1 / (0.2 + radiusProximity), lowerLimit)
+			);
+			float fullValue = max(bgOndul, 1.0 - max(1.0 - minVariation, 0.0));
+
+			gl_FragColor = mix(bgColor, fgColor, fullValue);
+		}
+	</script>
+	<script src="js/url-search-params-polyfill.js"></script>
+	<script>
+		"use strict";
+		//@ts-check
+		(function() {
+			
+			/** 
+			 * This is used above to convert the hex value from the html5 color picker into rgb values
+			 * from http://esotericsoftware.com/forum/WebGL-Tinting-Slot-7693
+			 * @param {string} hex the hexadecimal code. Must match the #FFFFFF format.
+			 * @returns {{r: number, g: number, b: number}|null}
+			 */
+			window.hexToRgb = function(hex) {
+				var result = /^([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+				var resultSmall = /^([a-f\d]{1})([a-f\d]{1})([a-f\d]{1})$/i.exec(hex);
+				return result ? {
+					r: parseInt(result[1], 16) / 255,
+					g: parseInt(result[2], 16) / 255,
+					b: parseInt(result[3], 16) / 255,
+				} : resultSmall ? {
+					r: parseInt(resultSmall[1], 16) / 15,
+					g: parseInt(resultSmall[2], 16) / 15,
+					b: parseInt(resultSmall[3], 16) / 15,
+				} : null;
+			}
+			
+			/** @type {WebGLRenderingContext} */
+			var gl;
+			/** @type {WebGLBuffer} */
+			var buffer;
+			
+			function createShader(/**@type {string}*/src, /**@type {number}*/type) {
+				var shader = gl.createShader(type);
+				gl.shaderSource(shader, src);
+				gl.compileShader(shader);
+				if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+					alert((type == gl.VERTEX_SHADER ? "VERTEX" : "FRAGMENT" ) + " SHADER:\n" + gl.getShaderInfoLog(shader));
+					return null;
+				}
+				return shader;
+			}
+			
+			function createProgram(/**@type {string}*/vertex, /**@type {string}*/fragment) {
+				var program = gl.createProgram();
+				var vs = createShader(vertex, gl.VERTEX_SHADER);
+				var fs = createShader("precision highp float;\n\n" + fragment, gl.FRAGMENT_SHADER);
+				if (vs == null || fs == null) return null;
+				gl.attachShader(program, vs);
+				gl.attachShader(program, fs);
+				gl.deleteShader(vs);
+				gl.deleteShader(fs);
+				gl.linkProgram(program);
+				if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+					alert("ERROR:\n" +
+					"VALIDATE_STATUS: " + gl.getProgramParameter(program, gl.VALIDATE_STATUS) + "\n" +
+					"ERROR: " + gl.getError() + "\n\n" +
+					"- Vertex Shader -\n" + vertex + "\n\n" +
+					"- Fragment Shader -\n" + fragment);
+					return null;
+				}
+				return program;
+			}
+			
+			/**
+			 * @typedef Locations
+			 * @property {WebGLUniformLocation} time
+			 * @property {WebGLUniformLocation} resolution
+			 * @property {WebGLUniformLocation} aspect
+			 * 
+			 * @property {WebGLUniformLocation} branchCount
+			 * @property {WebGLUniformLocation} direction
+			 * @property {WebGLUniformLocation} rotation
+			 * @property {WebGLUniformLocation} lowerLimit
+			 * 
+			 * @property {WebGLUniformLocation} bgColor
+			 * @property {WebGLUniformLocation} fgColor
+			 * 
+			 * @property {WebGLUniformLocation} dotList
+			 * @property {WebGLUniformLocation} strengthList
+			 */
+			
+			/**@returns {Locations}*/
+			function getLocations(/** @type {WebGLProgram} */program) {
+				return {
+					time: gl.getUniformLocation(program, 'time'),
+					resolution: gl.getUniformLocation(program, 'resolution'),
+					aspect: gl.getUniformLocation(program, 'aspect'),
+					
+					branchCount: gl.getUniformLocation(program, 'branchCount'),
+					direction: gl.getUniformLocation(program, 'direction'),
+					rotation: gl.getUniformLocation(program, 'rotation'),
+					lowerLimit: gl.getUniformLocation(program, 'lowerLimit'),
+
+					bgColor: gl.getUniformLocation(program, 'bgColor'),
+					fgColor: gl.getUniformLocation(program, 'fgColor'),
+
+					dotList: gl.getUniformLocation(program, 'dotList'),
+					strengthList: gl.getUniformLocation(program, 'strengthList'),
+				};
+			}
+			
+			function initWebGL(canvas, shaderVS, shaderFS) {
+				// Initialize WebGL
+				try {
+					gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+				}
+				catch(e) { }
+				if(!gl) {
+					alert("WebGL not supported");
+					throw "cannot create webgl context";
+				}
+				
+				// Create Vertex buffer (2 triangles)
+				buffer = gl.createBuffer();
+				gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0]), gl.STATIC_DRAW);
+				var currentProgram = createProgram(shaderVS, shaderFS);
+				gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+				gl.enableVertexAttribArray(0);
+				// Create Program
+				return {
+					currentProgram: currentProgram,
+					locations: getLocations(currentProgram),
+				};
+			}
+
+			function renderCanvas(/**@type {WebGLProgram}*/program, /**@type {Locations}*/locations, parameters) {
+				// Load program into GPU
+				gl.useProgram(program);
+				// The global parameters
+				gl.uniform1f(locations.time, parameters.time / 1000);
+				gl.uniform2f(locations.resolution, parameters.screenWidth, parameters.screenHeight);
+				gl.uniform2f(locations.aspect, parameters.aspectX, parameters.aspectY);
+				// The spiral parameters
+				gl.uniform1f(locations.branchCount, parameters.branchCount);
+				gl.uniform1f(locations.direction, parameters.direction);
+				gl.uniform1f(locations.rotation, parameters.rotation);
+				gl.uniform1f(locations.lowerLimit, parameters.lowerLimit);
+
+				// The colors
+				gl.uniform4f(locations.bgColor, parameters.colors.bg.r, parameters.colors.bg.g, parameters.colors.bg.b, 1.0);
+				gl.uniform4f(locations.fgColor, parameters.colors.fg.r, parameters.colors.fg.g, parameters.colors.fg.b, 1.0);
+				
+				//The words part of the spiral
+				gl.uniform1fv(locations.strengthList, parameters.strengthList);
+				gl.uniform2fv(locations.dotList, parameters.dotList);
+
+				// Render using the given "full screen" geometry
+				gl.drawArrays(gl.TRIANGLES, 0, 6);
+			}
+			
+			var loopData;
+			
+			(function() {
+				var data = init(getConfigFromURL())
+				loopData = data;
+				function loopFrame() {
+					loopData.parameters.time += TIME_INTERVAL * loopData.parameters.speedFactor;
+					loop(loopData.data.currentProgram, loopData.data.locations, loopData.parameters);
+				}
+				setInterval(loopFrame, TIME_INTERVAL);
+			})();
+			
+			function getCanvasData(fileName, canvas, parameters) {
+				var vs = "attribute vec3 position; void main() { gl_Position = vec4(position, 1.0); }";
+				var fs = document.getElementById("shader").textContent;
+				return {
+					data: initWebGL(canvas, vs, fs),
+					parameters: parameters,
+				};
+			}
+			
+			function init(config) {
+				// Spiral parameters to use and/or change.
+				var parameters = GetBaseParameters(config);
+				
+				var	canvas = document.getElementById('canvas');
+				var data = getCanvasData(config.shaderFileName, canvas, parameters);
+				// Setup program size.
+				onWindowResize(config, canvas, data.parameters);
+				window.addEventListener("resize", function(ev) { onWindowResize(config, canvas, data.parameters); }, false);
+				return data;
+			}
+			
+			function onWindowResize(config, canvas, parameters) {
+				canvas.width = window.innerWidth;
+				canvas.height = window.innerHeight;
+				parameters.screenWidth = canvas.width;
+				parameters.screenHeight = canvas.height;
+				parameters.aspectX = canvas.width/canvas.height;
+				parameters.aspectY = 1.0;
+				gl.viewport(0, 0, canvas.width, canvas.height);
+			}
+			
+			function loop(/**@type {WebGLProgram}*/program, /**@type {Locations}*/locations, parameters) {
+				if (!program) return;
+				loopEvolve(parameters);
+				renderCanvas(program, locations, parameters);
+			}
+		})()
+		
+	</script>
+</body>
+</html>
