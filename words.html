@@ -4,8 +4,8 @@
 	<title>Words on spiral</title>
 	<link rel="icon" href="favicon.png">
 	<meta name="twitter:card" content="summary" />
-	<meta name="twitter:title" content="Words on a spiral" />
-	<meta name="twitter:description" content="This spiral actually has words on it." />
+	<meta name="twitter:title" content="Dynamic spiral" />
+	<meta name="twitter:description" content="You change this spiral by hovering over it." />
 	<meta name="twitter:image" content="https://dexesttp.github.io/spiral-shenanigans/preview.png" />
 	<meta name="twitter:image:alt" content="Generic spiral preview." />
 	<style>
@@ -56,38 +56,63 @@
 				colors: config.colors,
 				speedFactor: config.speedFactor,
 				lowerLimit: 0.1,
-				strengthList: [10.0, 0.0, 0.0, 5.0],
+				strengthList: [10.0, 0.0, 0.0, 0.0, 0.0, 0.0],
 				dotList: [
 					0.0, 0.0,
-					2.0, 0.0,
-					-2.0, -2.0,
-					-2.0, 2.0,
+					0.0, 0.0,
+					0.0, 0.0,
+					0.0, 0.0,
+					0.0, 0.0,
+					0.0, 0.0,
 				],
 			};
 		}
 
+		var posXArray = [];
+		var posYArray = [];
+		var strengthArray = [];
 		var posX = 4.0;
 		var posY = 4.0;
+		var strength = 1.0;
 
 		function loopEvolve(parameters) {
-			parameters.dotList[6] = posX;
-			parameters.dotList[7] = posY;
+			parameters.dotList[2] = posX;
+			parameters.dotList[3] = posY;
+			parameters.strengthList[1] = strength;
+			parameters.dotList[4] = posXArray[5] || 0.0;
+			parameters.dotList[5] = posYArray[5] || 0.0;
+			parameters.strengthList[2] = 0.8*strengthArray[5] || 0.0;
+			parameters.dotList[6] = posXArray[10] || 0.0;
+			parameters.dotList[7] = posYArray[10] || 0.0;
+			parameters.strengthList[3] = 0.6*strengthArray[10] || 0.0;
+			parameters.dotList[8] = posXArray[15] || 0.0;
+			parameters.dotList[9] = posYArray[15] || 0.0;
+			parameters.strengthList[4] = 0.4*strengthArray[15] || 0.0;
+			parameters.dotList[10] = posXArray[20] || 0.0;
+			parameters.dotList[11] = posYArray[20] || 0.0;
+			parameters.strengthList[5] = 0.2*strengthArray[20] || 0.0;
 		}
 
 		document.getElementsByTagName("canvas")[0].onmousemove = function(event) {
-			posX = - 20 * (event.clientX - window.innerWidth / 2) / (window.innerWidth + window.innerHeight);
-			posY = 10 * event.clientY / window.innerHeight - 5.0;
+			posX = - 2 * ((event.clientX - window.innerWidth / 2) / window.innerWidth) * (window.innerWidth / window.innerHeight);
+			posXArray.splice(20);
+			posXArray.unshift(posX);
+			posY = 2 * (event.clientY - window.innerHeight / 2) / window.innerHeight;
+			posYArray.splice(20);
+			posYArray.unshift(posY);
+			var distance = 2.5 * Math.sqrt(posX * posX + posY * posY);
+			strength = Math.max(0.5, 200.0 / (20.0 + Math.exp(distance))) * 0.5;
+			strengthArray.splice(20);
+			strengthArray.unshift(strength);
 		};
 
 	</script>
 	<script id="shader" type="text/shader">
-		#define MAX_VALUES 4
+		#define MAX_VALUES 6
 
 		#define M_PI 3.1415926535897932384626433832795
 		#define M_2PI 6.283185307179586476925286766559
 		#define M_PI_OVER_2 1.5707963267948966192313216916398
-
-		#define C_SPIRAL_SPEED 2.0
 
 		uniform float time;
 		uniform vec2 resolution;
@@ -129,42 +154,24 @@
 			return (min(sin(inputValue) + 2.0 - percent, 1.0) - 1.0 + percent) * (1.0 / percent);
 		}
 
-		// Main method : entry point of the application.
 		void main(void) {
-			// This variable is used for time manipulation.
-			// Stays at a constant "60.0" spin speed.
 			float timespeedup = mod(60.0*time, 120.0);
-			// RadTime is the time but in a [0, 2Pi[ range
 			float radTime = 3.1415 * timespeedup / 60.0;
 			// float radTime = M_PI;
 
-			// Transform (x, y) into (r, a) coordinates
 			vec2 position = -aspect.xy + 2.0 * gl_FragCoord.xy / resolution.xy * aspect.xy;
 			float angle = getAngle(position);
 			float radius = length(position);
-
-			vec2 dots[MAX_VALUES];
-			mat2 rotationMatrix = mat2(cos(2. * radTime), -sin(2. * radTime), sin(2. * radTime), cos(2. * radTime));
-			dots[0] = vec2(0.0, 0.0);
-			dots[1] = vec2(2.0, 2.0) * rotationMatrix;
-			dots[2] = vec2(0.0, -3.0) * rotationMatrix;
-			dots[3] = vec2(-2.0, -2.0) * rotationMatrix;
-			float strengths[MAX_VALUES];
-			strengths[0] = 10.0;
-			strengths[1] = 0.0;
-			strengths[2] = 5.0 * (0.5 * sharpSin(radTime, 0.7) + 0.5);
-			strengths[3] = 5.0 * (0.5 * sharpSin(radTime, 0.7) + 0.5);
-
 			float logVariation = 0.;
 			float radiusProximity = radius;
 			float minVariation = 0.0;
 			for(int i = 0; i < MAX_VALUES; i++) {
 				vec2 dot = dotList[i];
 				float strength = strengthList[i];
-				vec2 fgCenterA = -aspect.xy + dot * (.1 + radius * .1) + 2.0 * gl_FragCoord.xy / resolution.xy * aspect.xy;
+				vec2 fgCenterA = -aspect.xy + dot + 2.0 * gl_FragCoord.xy / resolution.xy * aspect.xy;
 				float radiusA = length(fgCenterA);
 				if(strength > 0.) {
-					radiusProximity = min(radiusProximity, (radiusA) / (radius * strength * .5));
+					radiusProximity = min(radiusProximity, (radiusA) / (exp(radius) * strength * .5));
 				}
 				logVariation += log(abs(radiusA - 0.1 * radius + 0.1)) * strength;
 				minVariation += .1 * exp(radius) * strength * min(1. / (radiusA * 50.0 + .1), 1.0);
@@ -174,7 +181,6 @@
 				max(0.1 / (0.2 + radiusProximity), lowerLimit)
 			);
 			float fullValue = max(bgOndul, 1.0 - max(1.0 - minVariation, 0.0));
-
 			gl_FragColor = mix(bgColor, fgColor, fullValue);
 		}
 	</script>

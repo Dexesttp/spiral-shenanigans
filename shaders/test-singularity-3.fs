@@ -42,10 +42,6 @@ float offsetSin(float inputValue, float percent) {
 	return (min(sin(inputValue) + 2.0 - percent, 1.0) - 1.0 + percent) * (1.0 / percent);
 }
 
-mat2 getMatrix(float angle) {
-	return mat2(cos(angle), -sin(angle), sin(angle), cos(angle));
-}
-
 // Main method : entry point of the application.
 void main(void) {
 	// This variable is used for time manipulation.
@@ -60,60 +56,18 @@ void main(void) {
 	float angle = getAngle(position);
 	float radius = length(position);
 
-#define MAX_VALUES 21
+	mat2 rotationMatrix = mat2(cos(2. * radTime), -sin(2. * radTime), sin(2. * radTime), cos(2. * radTime));
+#define MAX_VALUES 4
 	vec2 dots[MAX_VALUES];
-	vec2 dotStart = vec2(3.0, 0.0);
-	float offset = -2.0 * radTime;
-	vec2 dotStart2 = vec2(3.5, 3.5);
-	float offset2 = -1.0 * radTime;
-	vec2 dotStart3 = vec2(0.5, 4.0);
-	float offset3 = 1.0 * radTime;
 	dots[0] = vec2(0.0, 0.0);
-	dots[1] = dotStart * getMatrix(offset + M_PI * 0.);
-	dots[2] = dotStart * getMatrix(offset + M_PI * 0.25);
-	dots[3] = dotStart * getMatrix(offset + M_PI * 0.5);
-	dots[4] = dotStart * getMatrix(offset + M_PI * 0.75);
-	dots[5] = dotStart * getMatrix(offset + M_PI * 1.);
-	dots[6] = dotStart * getMatrix(offset + M_PI * 1.25);
-	dots[7] = dotStart * getMatrix(offset + M_PI * 1.5);
-	dots[8] = dotStart * getMatrix(offset + M_PI * 1.75);
-	dots[9] = dotStart2 * getMatrix(offset2 + M_PI * 0.);
-	dots[10] = dotStart2 * getMatrix(offset2 + M_PI * 0.25);
-	dots[11] = dotStart2 * getMatrix(offset2 + M_PI * 0.5);
-	dots[12] = dotStart2 * getMatrix(offset2 + M_PI * 0.75);
-	dots[13] = dotStart2 * getMatrix(offset2 + M_PI * 1.);
-	dots[14] = dotStart2 * getMatrix(offset2 + M_PI * 1.25);
-	dots[15] = dotStart2 * getMatrix(offset2 + M_PI * 1.5);
-	dots[16] = dotStart2 * getMatrix(offset2 + M_PI * 1.75);
-	dots[17] = dotStart3 * getMatrix(offset3 + M_PI * 0.);
-	dots[18] = dotStart3 * getMatrix(offset3 + M_PI * 0.25);
-	dots[19] = dotStart3 * getMatrix(offset3 + M_PI * 1.);
-	dots[20] = dotStart3 * getMatrix(offset3 + M_PI * 1.25);
+	dots[1] = vec2(2.0, 2.0) * rotationMatrix;
+	dots[2] = vec2(0.0, -3.0) * rotationMatrix;
+	dots[3] = vec2(-2.0, -2.0) * rotationMatrix;
 	float strengths[MAX_VALUES];
-	float commonStrength = 4.0;
-	float commonStrength2 = 2.0;
-	float commonStrength3 = 2.0;
 	strengths[0] = 10.0;
-	strengths[1] = commonStrength;
-	strengths[2] = commonStrength;
-	strengths[3] = commonStrength;
-	strengths[4] = commonStrength;
-	strengths[5] = commonStrength;
-	strengths[6] = commonStrength;
-	strengths[7] = commonStrength;
-	strengths[8] = commonStrength;
-	strengths[9] = commonStrength2;
-	strengths[10] = commonStrength2;
-	strengths[11] = commonStrength2;
-	strengths[12] = commonStrength2;
-	strengths[13] = commonStrength2;
-	strengths[14] = commonStrength2;
-	strengths[15] = commonStrength2;
-	strengths[16] = commonStrength2;
-	strengths[17] = commonStrength3;
-	strengths[18] = commonStrength3;
-	strengths[19] = commonStrength3;
-	strengths[20] = commonStrength3;
+	strengths[1] = 0.0;
+	strengths[2] = 5.0 * (0.5 * sharpSin(radTime, 0.7) + 0.5);
+	strengths[3] = 5.0 * (0.5 * sharpSin(radTime, 0.7) + 0.5);
 
 	float logVariation = 0.;
 	float radiusProximity = radius;

@@ -57,6 +57,8 @@ var shadersList = [
     "test-rainbow-spiral",
     "test-singularity-1",
     "test-singularity-2",
+    "test-singularity-3",
+    "test-singularity-4",
     "test-small-dots",
     "test-squares-lol",
     "test-weird-spiral-1",
