@@ -6,8 +6,11 @@ function getConfigFromURL() {
 	return {
 		shaderFileName: params.get("file") || "spiral",
 		// Size of the canvas, either "small" (400*300) or "big" (whole screen)
-		canvasSize: showInterface
-			? params.get("canvas") === "small" ? "small" : "interface"
+		canvasSize:
+			showInterface
+				? params.get("canvas") === "small" ? "small"
+				: params.get("canvas") === "portrait" ? "portrait"
+				: "interface"
             : params.has("big") ? "big"
             : params.get("canvas") || "small",
 		speedFactor: +params.get("speed") || 1,

@@ -62,21 +62,23 @@ void main(void) {
 	float angle = getAngle(position);
 	float rab =  - rotation * angle * branchCount;
 	float dr = direction * radTime;
+	float activation = (1. - offsetSin(radTime - 4. * radius, 0.25)) * .5;
 
 
-	float spinValue = offsetSin(
-			15.0 * radius
-				* (.5 * sin(angle * branchCount + direction * 12. * radius + 5. * dr) + 2.5)
-			+ 1.0 * dr
-			+ rab
-		, 0.3
-	);
+	float spinValue = getSpin(radius, rab, dr, 0. * M_PI_OVER_2, 3.0, activation);
+	float spinValue2 = getSpin(radius, rab + radTime, dr, 1. * M_PI_OVER_2, 3.0, activation);
+	float spinValue3 = getSpin(radius, rab + 2.*radTime + M_PI_OVER_2, dr, 0. * M_PI_OVER_2, 6.0, activation);
+	float spinValue4 = getSpin(radius, rab - radTime + M_PI_OVER_2, dr, 1. * M_PI_OVER_2, 6.0, activation);
 
 	// This is the color value at a given point of the spin
 	vec4 spinVector = mix(
-			fgColor,
+			mix(
+				mix(fgColor, pulseColor, (spinValue - spinValue2) / 2.0 + 0.5),
+				mix(vec4(1., 0., 0., 1.), vec4(0., 1., 0., 1.), (spinValue3 - spinValue4) / 2.0 + 0.5),
+				(spinValue * spinValue3 - spinValue2 * spinValue4) / 2.0 + 0.5
+			),
 			bgColor,
-			spinValue
+			spinValue * spinValue2 * spinValue3 * spinValue4
 	);
 
 	// Add a flare in the middle of the spiral to hide the moiré effects when the spiral gets tiny.

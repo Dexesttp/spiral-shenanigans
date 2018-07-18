@@ -59,6 +59,12 @@ function smallInterface() {
 	window.location.href = "" + location.pathname + "?" + params;
 }
 
+function portraitInterface() {
+    const params = new URLSearchParams(location.search);
+	params.set("canvas", "portrait");
+	window.location.href = "" + location.pathname + "?" + params;
+}
+
 function fullScreen() {
     const params = new URLSearchParams(location.search);
 	params.delete("interface");
@@ -172,6 +178,10 @@ function onWindowResize(config, canvas, parameters) {
 	if(config.canvasSize === "small") {
 		canvas.width = 400;
 		canvas.height = 300;
+	}
+	else if(config.canvasSize === "portrait") {
+		canvas.width = 300;
+		canvas.height = 400;
 	}
 	else if(config.canvasSize === "interface") {
 		var width = 2 * window.innerWidth / 3;
