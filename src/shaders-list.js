@@ -58,6 +58,7 @@ var shadersList = [
     "test-double-async-interference",
     "test-double-color",
     "test-expanding-twists",
+    "test-flash",
     "test-flower-colors-sin",
     "test-full-dots",
     "test-offset-2",
