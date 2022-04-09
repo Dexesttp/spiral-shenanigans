@@ -8,12 +8,10 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
-  },
   "devDependencies": {
+    "eslint": "^8.13.0",
     "express": "^4.16.3",
-    "eslint": "^3.19.0",
-    "moment": "^2.22.1",
-    "puppeteer": "^1.13.0"
+    "moment": "^2.29.2",
+    "puppeteer": "^13.5.2"
   }
 }
